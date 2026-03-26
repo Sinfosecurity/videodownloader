@@ -10,7 +10,7 @@ COPY requirements.txt .
 
 # Install deps; upgrade yt-dlp separately so it always gets the freshest build
 RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir --upgrade yt-dlp
+    pip install --no-cache-dir "yt-dlp==2025.10.14"
 
 COPY . .
 
