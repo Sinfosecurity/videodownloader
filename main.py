@@ -15,28 +15,43 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-# Cookies setup — supports two methods:
-# 1. INSTAGRAM_SESSION_ID env var (easiest — just one cookie value)
-# 2. COOKIES_CONTENT env var (full Netscape cookies file content)
+# Cookies setup — supports:
+# 1. INSTAGRAM_SESSION_ID  — Instagram sessionid cookie value (single string)
+# 2. YOUTUBE_SESSION_ID    — YouTube __Secure-3PSID cookie value (single string)
+# 3. COOKIES_CONTENT       — Full Netscape cookies file (covers any site)
+# Methods 1+2 can be combined; method 3 overrides both if set.
 COOKIES_FILE = Path("/tmp/vdl_cookies.txt")
 
 def _init_cookies() -> bool:
-    # Method 1: session ID only — build a minimal Netscape cookies file
-    session_id = os.environ.get("INSTAGRAM_SESSION_ID", "").strip()
-    if session_id:
-        COOKIES_FILE.write_text(
-            "# Netscape HTTP Cookie File\n"
-            ".instagram.com\tTRUE\t/\tTRUE\t2147483647\tsessionid\t" + session_id + "\n"
-        )
-        return True
+    lines = ["# Netscape HTTP Cookie File\n"]
+    found = False
 
-    # Method 2: full cookies file content
+    # Method 3: full cookies file — takes priority over individual session IDs
     content = os.environ.get("COOKIES_CONTENT", "").strip()
     if content:
         COOKIES_FILE.write_text(content)
         return True
 
-    return False
+    # Method 1: Instagram session ID
+    ig_session = os.environ.get("INSTAGRAM_SESSION_ID", "").strip()
+    if ig_session:
+        lines.append(
+            ".instagram.com\tTRUE\t/\tTRUE\t2147483647\tsessionid\t" + ig_session + "\n"
+        )
+        found = True
+
+    # Method 2: YouTube session ID (__Secure-3PSID is the primary YouTube auth cookie)
+    yt_session = os.environ.get("YOUTUBE_SESSION_ID", "").strip()
+    if yt_session:
+        lines.append(
+            ".youtube.com\tTRUE\t/\tTRUE\t2147483647\t__Secure-3PSID\t" + yt_session + "\n"
+        )
+        found = True
+
+    if found:
+        COOKIES_FILE.write_text("".join(lines))
+
+    return found
 
 HAS_COOKIES = _init_cookies()
 
