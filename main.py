@@ -6,6 +6,8 @@ import uuid
 from pathlib import Path
 from typing import Dict, Optional
 
+BASE_DIR = Path(__file__).parent
+
 import yt_dlp
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
@@ -47,7 +49,7 @@ def get_info_opts():
 
 @app.get("/")
 async def index():
-    return FileResponse("static/index.html")
+    return FileResponse(str(BASE_DIR / "static" / "index.html"))
 
 
 @app.post("/api/info")
@@ -224,4 +226,4 @@ async def serve_file(task_id: str):
     )
 
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
