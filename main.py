@@ -15,15 +15,27 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-# Cookies file path — write once at startup from COOKIES_CONTENT env var
+# Cookies setup — supports two methods:
+# 1. INSTAGRAM_SESSION_ID env var (easiest — just one cookie value)
+# 2. COOKIES_CONTENT env var (full Netscape cookies file content)
 COOKIES_FILE = Path("/tmp/vdl_cookies.txt")
 
-def _init_cookies():
-    """Write cookies from env var to a file yt-dlp can read."""
+def _init_cookies() -> bool:
+    # Method 1: session ID only — build a minimal Netscape cookies file
+    session_id = os.environ.get("INSTAGRAM_SESSION_ID", "").strip()
+    if session_id:
+        COOKIES_FILE.write_text(
+            "# Netscape HTTP Cookie File\n"
+            ".instagram.com\tTRUE\t/\tTRUE\t2147483647\tsessionid\t" + session_id + "\n"
+        )
+        return True
+
+    # Method 2: full cookies file content
     content = os.environ.get("COOKIES_CONTENT", "").strip()
     if content:
         COOKIES_FILE.write_text(content)
         return True
+
     return False
 
 HAS_COOKIES = _init_cookies()
