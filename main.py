@@ -44,7 +44,7 @@ def get_info_opts():
         # android_vr + tv avoids YouTube SABR streaming restrictions entirely
         "extractor_args": {
             "youtube": {
-                "player_client": ["android_vr", "tv", "web"],
+                "player_client": ["android_vr", "tv_simply"],
             }
         },
     }
@@ -306,7 +306,7 @@ def _download_sync(task_id: str, url: str, format_id: str, whatsapp: bool = Fals
         # android_vr + tv avoids YouTube SABR streaming restrictions entirely
         "extractor_args": {
             "youtube": {
-                "player_client": ["android_vr", "tv", "web"],
+                "player_client": ["android_vr", "tv_simply"],
             }
         },
         # Re-encode to H.264 + AAC so the file plays natively everywhere
