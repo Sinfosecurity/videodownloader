@@ -40,10 +40,10 @@ def get_info_opts():
         "no_warnings": True,
         "extract_flat": False,
         "skip_download": True,
-        # Use android_vr client — avoids YouTube SABR streaming restrictions
+        # android_vr + tv avoids YouTube SABR streaming restrictions entirely
         "extractor_args": {
             "youtube": {
-                "player_client": ["android_vr", "web"],
+                "player_client": ["android_vr", "tv", "web"],
             }
         },
     }
@@ -271,10 +271,10 @@ def _download_sync(task_id: str, url: str, format_id: str):
         "quiet": True,
         "no_warnings": True,
         "merge_output_format": "mp4",
-        # Use android_vr + web clients — avoids YouTube SABR streaming blocks
+        # android_vr + tv avoids YouTube SABR streaming restrictions entirely
         "extractor_args": {
             "youtube": {
-                "player_client": ["android_vr", "web"],
+                "player_client": ["android_vr", "tv", "web"],
             }
         },
         # ffmpeg: web-optimised MP4 (moov atom at front for fast streaming)
