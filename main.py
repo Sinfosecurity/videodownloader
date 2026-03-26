@@ -32,6 +32,7 @@ class DownloadRequest(BaseModel):
     url: str
     format_id: Optional[str] = None
     task_id: Optional[str] = None
+    whatsapp: Optional[bool] = False
 
 
 def get_info_opts():
@@ -228,24 +229,34 @@ async def start_download(req: DownloadRequest):
         "speed": "",
         "eta": "",
         "filesize": "",
+        "whatsapp": req.whatsapp,
     }
-    asyncio.create_task(_run_download(task_id, req.url, req.format_id or PRESETS[2]["format_id"]))
+    asyncio.create_task(_run_download(
+        task_id, req.url,
+        req.format_id or PRESETS[2]["format_id"],
+        req.whatsapp or False,
+    ))
     return {"task_id": task_id}
 
 
-async def _run_download(task_id: str, url: str, format_id: str):
+async def _run_download(task_id: str, url: str, format_id: str, whatsapp: bool = False):
     loop = asyncio.get_event_loop()
-    await loop.run_in_executor(None, _download_sync, task_id, url, format_id)
+    await loop.run_in_executor(None, _download_sync, task_id, url, format_id, whatsapp)
 
 
-def _download_sync(task_id: str, url: str, format_id: str):
+def _download_sync(task_id: str, url: str, format_id: str, whatsapp: bool = False):
     output_path = DOWNLOAD_DIR / task_id
     output_path.mkdir(exist_ok=True)
     output_template = str(output_path / "%(title).120s.%(ext)s")
 
     # Check if this is an MP3 preset (special handling)
     is_mp3 = "mp3" in format_id
-    clean_format = "bestaudio/best" if is_mp3 else format_id
+
+    # WhatsApp: cap at 720p, smaller CRF for file size
+    if whatsapp:
+        clean_format = "bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]/best"
+    else:
+        clean_format = "bestaudio/best" if is_mp3 else format_id
 
     def progress_hook(d):
         if d["status"] == "downloading":
@@ -293,12 +304,13 @@ def _download_sync(task_id: str, url: str, format_id: str):
         ],
         "postprocessor_args": {
             "ffmpeg": [
-                "-vcodec", "libx264",    # H.264 — universally supported
-                "-acodec", "aac",         # AAC audio
-                "-crf", "23",             # quality level (18=best, 28=smallest)
-                "-preset", "fast",        # fast encode
-                "-movflags", "+faststart" # moov atom at front for streaming
-            ]
+                "-vcodec", "libx264",
+                "-acodec", "aac",
+                "-crf", "28" if whatsapp else "23",   # smaller file for WhatsApp
+                "-preset", "fast",
+                "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",  # ensure even dimensions
+                "-movflags", "+faststart",
+            ] + (["-b:a", "128k"] if whatsapp else [])  # lower audio bitrate for WA
         },
         "prefer_ffmpeg": True,
         "keepvideo": False,
