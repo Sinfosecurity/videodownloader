@@ -241,7 +241,7 @@ async def _run_download(task_id: str, url: str, format_id: str):
 def _download_sync(task_id: str, url: str, format_id: str):
     output_path = DOWNLOAD_DIR / task_id
     output_path.mkdir(exist_ok=True)
-    output_template = str(output_path / "%(title).120s [%(height)sp].%(ext)s")
+    output_template = str(output_path / "%(title).120s.%(ext)s")
 
     # Check if this is an MP3 preset (special handling)
     is_mp3 = "mp3" in format_id
@@ -283,13 +283,25 @@ def _download_sync(task_id: str, url: str, format_id: str):
                 "player_client": ["android_vr", "tv", "web"],
             }
         },
-        # ffmpeg: web-optimised MP4 (moov atom at front for fast streaming)
+        # Re-encode to H.264 + AAC so the file plays natively everywhere
+        # (WhatsApp, iMessage, Telegram, etc.) without showing as attachment
+        "postprocessors": [
+            {
+                "key": "FFmpegVideoConvertor",
+                "preferedformat": "mp4",
+            }
+        ],
         "postprocessor_args": {
-            "ffmpeg": ["-movflags", "+faststart"]
+            "ffmpeg": [
+                "-vcodec", "libx264",    # H.264 — universally supported
+                "-acodec", "aac",         # AAC audio
+                "-crf", "23",             # quality level (18=best, 28=smallest)
+                "-preset", "fast",        # fast encode
+                "-movflags", "+faststart" # moov atom at front for streaming
+            ]
         },
         "prefer_ffmpeg": True,
         "keepvideo": False,
-        "remux_video": "mp4",
     }
 
     if is_mp3:
