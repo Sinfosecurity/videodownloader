@@ -40,48 +40,54 @@ def get_info_opts():
         "no_warnings": True,
         "extract_flat": False,
         "skip_download": True,
+        # Use android_vr client — avoids YouTube SABR streaming restrictions
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android_vr", "web"],
+            }
+        },
     }
 
 
 # Quality presets — ordered best to worst, all output as MP4
 PRESETS = [
     {
-        "format_id": "bestvideo[ext=mp4][height<=2160]+bestaudio[ext=m4a]/bestvideo[height<=2160]+bestaudio/best",
+        "format_id": "bestvideo[ext=mp4][height<=2160]+bestaudio[ext=m4a]/bestvideo[height<=2160]+bestaudio/bestvideo+bestaudio/best",
         "label": "4K / Best Available",
         "desc": "Highest possible resolution",
         "tag": "4K",
         "tag_color": "gold",
     },
     {
-        "format_id": "bestvideo[ext=mp4][height<=1440]+bestaudio[ext=m4a]/bestvideo[height<=1440]+bestaudio/best",
+        "format_id": "bestvideo[ext=mp4][height<=1440]+bestaudio[ext=m4a]/bestvideo[height<=1440]+bestaudio/bestvideo+bestaudio/best",
         "label": "1440p (2K)",
         "desc": "Ultra-sharp, great for large screens",
         "tag": "2K",
         "tag_color": "purple",
     },
     {
-        "format_id": "bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best",
+        "format_id": "bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
         "label": "1080p Full HD",
         "desc": "Best all-round quality",
         "tag": "FHD",
         "tag_color": "blue",
     },
     {
-        "format_id": "bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best",
+        "format_id": "bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
         "label": "720p HD",
         "desc": "Good quality, smaller file",
         "tag": "HD",
         "tag_color": "green",
     },
     {
-        "format_id": "bestvideo[ext=mp4][height<=480]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best",
+        "format_id": "bestvideo[ext=mp4][height<=480]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best[height<=480]/best",
         "label": "480p SD",
         "desc": "Compact size, decent quality",
         "tag": "SD",
         "tag_color": "orange",
     },
     {
-        "format_id": "bestvideo[ext=mp4][height<=360]+bestaudio[ext=m4a]/bestvideo[height<=360]+bestaudio/best",
+        "format_id": "bestvideo[ext=mp4][height<=360]+bestaudio[ext=m4a]/bestvideo[height<=360]+bestaudio/best[height<=360]/best",
         "label": "360p Low",
         "desc": "Smallest video file",
         "tag": "LOW",
@@ -97,7 +103,7 @@ PRESETS = [
     {
         "format_id": "bestaudio/best --extract-audio --audio-format mp3",
         "label": "Audio Only (MP3)",
-        "desc": "Universal MP3 audio",
+        "desc": "Universal MP3 audio, 320kbps",
         "tag": "MP3",
         "tag_color": "teal",
         "audio_only": True,
@@ -265,15 +271,18 @@ def _download_sync(task_id: str, url: str, format_id: str):
         "quiet": True,
         "no_warnings": True,
         "merge_output_format": "mp4",
-        # ffmpeg post-processing for best quality merge
+        # Use android_vr + web clients — avoids YouTube SABR streaming blocks
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android_vr", "web"],
+            }
+        },
+        # ffmpeg: web-optimised MP4 (moov atom at front for fast streaming)
         "postprocessor_args": {
-            "ffmpeg": [
-                "-movflags", "+faststart",  # web-optimised MP4 (moov atom at front)
-            ]
+            "ffmpeg": ["-movflags", "+faststart"]
         },
         "prefer_ffmpeg": True,
         "keepvideo": False,
-        # Re-encode to H.264 only if codec is incompatible with MP4
         "remux_video": "mp4",
     }
 
