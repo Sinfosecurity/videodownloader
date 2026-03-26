@@ -302,6 +302,7 @@
     .prog-status.done    { color: var(--success); }
     .prog-status.error   { color: var(--error); }
     .prog-status.merging { color: var(--warn); }
+    .prog-status.encoding { color: var(--warn); }
     .prog-pct { font-size: 1rem; font-weight: 700; color: var(--accent-hi); }
 
     .bar-track {
@@ -313,6 +314,15 @@
       height: 100%; border-radius: 99px;
       background: linear-gradient(90deg, var(--accent), var(--accent-hi));
       transition: width .35s ease;
+    }
+    .bar-fill.encoding {
+      background: linear-gradient(90deg, var(--warn), #fde68a, var(--warn));
+      background-size: 200% 100%;
+      animation: shimmer 1.4s linear infinite;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
 
     .prog-stats {
@@ -766,15 +776,24 @@
 
     const st = document.getElementById('prog-status');
     const map = {
-      done:       ['done',    'Complete'],
-      error:      ['error',   'Error — ' + (d.error || 'unknown')],
-      processing: ['merging', 'Merging streams…'],
-      starting:   ['running', 'Starting…'],
-      downloading:['running', 'Downloading…'],
+      done:        ['done',     'Complete'],
+      error:       ['error',    'Error — ' + (d.error || 'unknown')],
+      processing:  ['merging',  'Merging streams…'],
+      encoding:    ['encoding', 'Re-encoding video… please wait'],
+      starting:    ['running',  'Starting…'],
+      downloading: ['running',  'Downloading…'],
     };
     const [cls, txt] = map[d.status] || ['running', 'Working…'];
     st.className = 'prog-status ' + cls;
     st.textContent = txt;
+
+    // Pulse the bar amber during encoding, normal gradient otherwise
+    const bar = document.getElementById('bar-fill');
+    if (d.status === 'encoding') {
+      bar.classList.add('encoding');
+    } else {
+      bar.classList.remove('encoding');
+    }
 
     if (d.status === 'done') {
       document.getElementById('done-filename').textContent = d.title   || '';
@@ -788,7 +807,9 @@
   }
 
   function resetProgress() {
-    document.getElementById('bar-fill').style.width = '0%';
+    const bar = document.getElementById('bar-fill');
+    bar.style.width = '0%';
+    bar.classList.remove('encoding');
     document.getElementById('prog-pct').textContent = '0%';
     document.getElementById('stat-speed').textContent = '—';
     document.getElementById('stat-eta').textContent   = '—';

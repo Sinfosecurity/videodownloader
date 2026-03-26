@@ -262,7 +262,9 @@ def _download_sync(task_id: str, url: str, format_id: str, whatsapp: bool = Fals
         if d["status"] == "downloading":
             total = d.get("total_bytes") or d.get("total_bytes_estimate", 0)
             downloaded = d.get("downloaded_bytes", 0)
-            percent = (downloaded / total * 100) if total else 0
+            # Scale download to 0-80% — leave 80-100% for encoding
+            raw_pct = (downloaded / total * 100) if total else 0
+            percent = round(raw_pct * 0.8, 1)
             speed = d.get("_speed_str", "").strip()
             eta = d.get("_eta_str", "").strip()
             size = ""
@@ -271,20 +273,33 @@ def _download_sync(task_id: str, url: str, format_id: str, whatsapp: bool = Fals
                 size = f"{mb:.1f} MB"
             tasks[task_id].update({
                 "status": "downloading",
-                "progress": round(percent, 1),
+                "progress": percent,
                 "speed": speed,
                 "eta": eta,
                 "filesize": size,
             })
         elif d["status"] == "finished":
-            tasks[task_id].update({"status": "processing", "progress": 99, "eta": ""})
+            tasks[task_id].update({
+                "status": "encoding",
+                "progress": 80,
+                "speed": "",
+                "eta": "",
+            })
         elif d["status"] == "error":
             tasks[task_id].update({"status": "error", "error": "Download failed during transfer"})
+
+    def postprocessor_hook(d):
+        """Track ffmpeg encoding progress (fires at start and finish of each PP step)."""
+        if d["status"] == "started":
+            tasks[task_id].update({"status": "encoding", "progress": 85})
+        elif d["status"] == "finished":
+            tasks[task_id].update({"status": "encoding", "progress": 98})
 
     ydl_opts = {
         "format": clean_format,
         "outtmpl": output_template,
         "progress_hooks": [progress_hook],
+        "postprocessor_hooks": [postprocessor_hook],
         "quiet": True,
         "no_warnings": True,
         "merge_output_format": "mp4",
