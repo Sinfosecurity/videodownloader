@@ -8,17 +8,26 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0f0f13;
-      --surface: #1a1a24;
-      --surface2: #22222f;
-      --border: #2e2e3e;
+      --bg: #0a0a10;
+      --surface: #13131c;
+      --surface2: #1c1c28;
+      --surface3: #222232;
+      --border: #2a2a3d;
       --accent: #6c63ff;
       --accent2: #a78bfa;
-      --text: #e8e8f0;
-      --muted: #7b7b9a;
+      --text: #e8e8f2;
+      --muted: #6b6b8a;
       --success: #22c55e;
       --error: #ef4444;
       --warning: #f59e0b;
+
+      --gold: #f59e0b;
+      --purple: #a855f7;
+      --blue: #3b82f6;
+      --green: #22c55e;
+      --orange: #f97316;
+      --gray: #6b7280;
+      --teal: #14b8a6;
     }
 
     body {
@@ -34,48 +43,45 @@
     /* ── Header ── */
     header {
       width: 100%;
-      padding: 1.25rem 2rem;
+      padding: 1rem 2rem;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       gap: .75rem;
     }
-    header svg { width: 32px; height: 32px; flex-shrink: 0; }
-    header h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -.5px; }
-    header span { color: var(--accent2); }
-    header h1 { margin-right: auto; }
+    header svg { width: 30px; height: 30px; flex-shrink: 0; }
+    header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -.5px; color: var(--text); }
+    header h1 span { color: var(--accent2); }
 
     /* ── Main ── */
     main {
       width: 100%;
-      max-width: 780px;
-      padding: 2.5rem 1.5rem 4rem;
+      max-width: 820px;
+      padding: 2rem 1.25rem 5rem;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1.25rem;
     }
 
-    /* ── URL Card ── */
+    /* ── Cards ── */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.5rem;
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
     }
     .card-title {
-      font-size: .8rem;
-      font-weight: 600;
+      font-size: .72rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .08em;
+      letter-spacing: .1em;
       color: var(--muted);
       margin-bottom: .9rem;
     }
 
-    .url-row {
-      display: flex;
-      gap: .75rem;
-    }
+    /* ── URL input ── */
+    .url-row { display: flex; gap: .65rem; }
     .url-row input {
       flex: 1;
       background: var(--bg);
@@ -90,208 +96,210 @@
     .url-row input:focus { border-color: var(--accent); }
     .url-row input::placeholder { color: var(--muted); }
 
+    /* ── Buttons ── */
     button {
-      cursor: pointer;
-      border: none;
-      outline: none;
-      font-family: inherit;
-      font-weight: 600;
-      border-radius: 10px;
-      transition: all .2s;
+      cursor: pointer; border: none; outline: none;
+      font-family: inherit; font-weight: 600;
+      border-radius: 10px; transition: all .18s;
     }
     .btn-primary {
-      background: var(--accent);
-      color: #fff;
-      padding: .75rem 1.4rem;
-      font-size: .9rem;
-      white-space: nowrap;
+      background: var(--accent); color: #fff;
+      padding: .75rem 1.4rem; font-size: .9rem; white-space: nowrap;
     }
-    .btn-primary:hover { background: #7b74ff; transform: translateY(-1px); }
-    .btn-primary:active { transform: translateY(0); }
-    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .btn-primary:hover:not(:disabled) { background: #7b74ff; transform: translateY(-1px); }
+    .btn-primary:active:not(:disabled) { transform: none; }
+    .btn-primary:disabled { opacity: .45; cursor: not-allowed; }
 
     .btn-success {
-      background: var(--success);
-      color: #fff;
-      padding: .7rem 1.4rem;
-      font-size: .9rem;
-      display: flex;
-      align-items: center;
-      gap: .5rem;
+      background: var(--success); color: #fff;
+      padding: .7rem 1.4rem; font-size: .9rem;
+      display: inline-flex; align-items: center; gap: .5rem;
     }
-    .btn-success:hover { background: #16a34a; }
+    .btn-success:hover { background: #16a34a; transform: translateY(-1px); }
 
     /* ── Video preview ── */
     #preview { display: none; }
-    .preview-inner {
-      display: flex;
-      gap: 1.25rem;
-      align-items: flex-start;
-    }
+    .preview-inner { display: flex; gap: 1.25rem; align-items: flex-start; }
     .thumb-wrap {
-      flex-shrink: 0;
-      width: 140px;
-      height: 90px;
-      border-radius: 10px;
-      overflow: hidden;
-      background: var(--surface2);
+      flex-shrink: 0; width: 150px; height: 95px;
+      border-radius: 10px; overflow: hidden; background: var(--surface2);
+      position: relative;
     }
     .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .duration-badge {
+      position: absolute; bottom: 5px; right: 6px;
+      background: rgba(0,0,0,.75); color: #fff;
+      font-size: .65rem; font-weight: 700;
+      padding: .15rem .4rem; border-radius: 4px;
+    }
     .preview-meta { flex: 1; min-width: 0; }
     .preview-meta h2 {
-      font-size: 1rem;
-      font-weight: 600;
-      line-height: 1.4;
-      margin-bottom: .4rem;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+      font-size: .98rem; font-weight: 700; line-height: 1.45;
+      margin-bottom: .5rem;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
     }
-    .meta-pills { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .meta-pills { display: flex; flex-wrap: wrap; gap: .35rem; }
     .pill {
-      font-size: .72rem;
-      padding: .2rem .6rem;
-      border-radius: 99px;
-      background: var(--surface2);
-      color: var(--muted);
-      border: 1px solid var(--border);
+      font-size: .7rem; padding: .18rem .55rem;
+      border-radius: 99px; background: var(--surface2);
+      color: var(--muted); border: 1px solid var(--border);
+    }
+    .pill-res {
+      background: #6c63ff18; color: var(--accent2);
+      border-color: #6c63ff44; font-weight: 700;
     }
 
-    /* ── Format selector ── */
+    /* ── Format section ── */
     #format-section { display: none; }
     .format-tabs {
-      display: flex;
-      gap: .5rem;
-      margin-bottom: 1rem;
+      display: flex; gap: .4rem; margin-bottom: 1rem;
     }
     .tab-btn {
-      background: var(--bg);
-      color: var(--muted);
-      padding: .4rem .9rem;
-      font-size: .8rem;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
+      background: var(--bg); color: var(--muted);
+      padding: .38rem .85rem; font-size: .78rem;
+      border: 1.5px solid var(--border); border-radius: 8px;
     }
     .tab-btn.active {
-      background: #6c63ff22;
-      color: var(--accent2);
+      background: #6c63ff18; color: var(--accent2);
       border-color: var(--accent);
     }
 
-    .format-list {
+    /* ── Preset grid ── */
+    .preset-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: .6rem;
-      max-height: 280px;
-      overflow-y: auto;
-      padding-right: .25rem;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: .65rem;
+    }
+    .preset-card {
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: .85rem 1rem;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex; flex-direction: column; gap: .3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .preset-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: var(--tag-color, var(--accent));
+      opacity: 0; transition: opacity .15s;
+    }
+    .preset-card:hover { border-color: var(--accent); background: var(--surface3); }
+    .preset-card:hover::before { opacity: 1; }
+    .preset-card.selected {
+      border-color: var(--accent);
+      background: #6c63ff12;
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .preset-card.selected::before { opacity: 1; }
+    .preset-card.unavailable { opacity: .4; cursor: not-allowed; }
+    .preset-tag {
+      display: inline-block; font-size: .65rem;
+      font-weight: 800; letter-spacing: .05em;
+      padding: .15rem .45rem; border-radius: 5px;
+      margin-bottom: .1rem;
+      background: var(--tag-bg, #6c63ff22);
+      color: var(--tag-color, var(--accent2));
+    }
+    .preset-label { font-size: .85rem; font-weight: 700; }
+    .preset-desc { font-size: .72rem; color: var(--muted); }
+
+    /* ── All-formats list ── */
+    .format-list {
+      display: flex; flex-direction: column; gap: .45rem;
+      max-height: 320px; overflow-y: auto; padding-right: .25rem;
     }
     .format-list::-webkit-scrollbar { width: 4px; }
     .format-list::-webkit-scrollbar-track { background: transparent; }
     .format-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-    .format-item {
-      background: var(--bg);
+    .format-row {
+      background: var(--surface2);
       border: 1.5px solid var(--border);
       border-radius: 10px;
-      padding: .65rem .9rem;
+      padding: .6rem 1rem;
       cursor: pointer;
-      transition: all .15s;
-      display: flex;
-      flex-direction: column;
-      gap: .2rem;
+      transition: all .12s;
+      display: flex; align-items: center; gap: .75rem;
     }
-    .format-item:hover { border-color: var(--accent); background: #6c63ff0a; }
-    .format-item.selected { border-color: var(--accent); background: #6c63ff18; }
-    .format-item .f-label { font-size: .82rem; font-weight: 600; }
-    .format-item .f-size { font-size: .72rem; color: var(--muted); }
-    .kind-badge {
-      display: inline-block;
-      font-size: .65rem;
-      padding: .1rem .4rem;
-      border-radius: 4px;
-      font-weight: 700;
-      text-transform: uppercase;
+    .format-row:hover { border-color: var(--accent); background: var(--surface3); }
+    .format-row.selected { border-color: var(--accent); background: #6c63ff12; }
+    .format-row .fr-label { flex: 1; font-size: .82rem; font-weight: 500; }
+    .format-row .fr-size { font-size: .72rem; color: var(--muted); white-space: nowrap; }
+    .kind-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
     }
-    .kind-best { background: #6c63ff22; color: var(--accent2); }
-    .kind-combined { background: #22c55e22; color: #4ade80; }
-    .kind-video { background: #f59e0b22; color: #fbbf24; }
-    .kind-audio { background: #06b6d422; color: #22d3ee; }
+    .kind-dot.combined { background: #22c55e; }
+    .kind-dot.video { background: #f59e0b; }
+    .kind-dot.audio { background: #14b8a6; }
 
+    /* ── Download button row ── */
     .dl-btn-row {
-      margin-top: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+      margin-top: 1.1rem; display: flex; align-items: center; gap: 1rem;
     }
+    #sel-label { font-size: .8rem; color: var(--muted); }
 
     /* ── Progress ── */
     #progress-section { display: none; }
-    .progress-bar-wrap {
-      background: var(--bg);
-      border-radius: 99px;
-      height: 8px;
-      overflow: hidden;
-      margin: .75rem 0 .4rem;
-    }
-    .progress-bar-fill {
-      height: 100%;
-      border-radius: 99px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      transition: width .4s ease;
-    }
-    .progress-meta {
-      display: flex;
-      justify-content: space-between;
-      font-size: .78rem;
-      color: var(--muted);
-    }
-    .status-text {
-      font-size: .88rem;
-      font-weight: 600;
-      margin-bottom: .5rem;
-    }
+
+    .prog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .6rem; }
+    .status-text { font-size: .9rem; font-weight: 700; }
+    .status-text.running { color: var(--accent2); }
     .status-text.done { color: var(--success); }
     .status-text.error { color: var(--error); }
-    .status-text.running { color: var(--accent2); }
+    .status-text.processing { color: var(--warning); }
+
+    .prog-pct { font-size: 1.1rem; font-weight: 800; color: var(--accent2); }
+
+    .progress-bar-wrap {
+      background: var(--surface2); border-radius: 99px;
+      height: 10px; overflow: hidden; margin-bottom: .55rem;
+    }
+    .progress-bar-fill {
+      height: 100%; border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width .35s ease;
+    }
+    .prog-stats {
+      display: flex; gap: 1.5rem; font-size: .78rem; color: var(--muted);
+    }
+    .prog-stat span { color: var(--text); font-weight: 600; }
+
+    #dl-ready { margin-top: 1rem; display: none; }
+    .done-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .file-info { font-size: .8rem; color: var(--muted); }
+    .file-info strong { color: var(--text); }
 
     /* ── Toast ── */
     #toast {
-      position: fixed;
-      bottom: 2rem;
-      left: 50%;
+      position: fixed; bottom: 2rem; left: 50%;
       transform: translateX(-50%) translateY(80px);
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: .75rem 1.25rem;
-      border-radius: 10px;
-      font-size: .88rem;
-      transition: transform .3s ease;
-      z-index: 999;
-      white-space: nowrap;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: .75rem 1.25rem;
+      border-radius: 10px; font-size: .85rem;
+      transition: transform .3s ease; z-index: 999; white-space: nowrap;
     }
     #toast.show { transform: translateX(-50%) translateY(0); }
     #toast.toast-error { border-color: var(--error); color: var(--error); }
 
     /* ── Spinner ── */
     .spinner {
-      width: 18px; height: 18px;
-      border: 2px solid #ffffff44;
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
-      flex-shrink: 0;
+      width: 16px; height: 16px;
+      border: 2px solid #ffffff33; border-top-color: #fff;
+      border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── Responsive ── */
     @media (max-width: 540px) {
       .preview-inner { flex-direction: column; }
-      .thumb-wrap { width: 100%; height: 180px; }
-      .format-list { grid-template-columns: 1fr; }
+      .thumb-wrap { width: 100%; height: 190px; }
       .url-row { flex-direction: column; }
+      .preset-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -300,8 +308,8 @@
 <header>
   <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="24" cy="24" r="24" fill="#6c63ff22"/>
-    <path d="M16 14l16 10-16 10V14z" fill="#a78bfa"/>
-    <path d="M14 36h20" stroke="#6c63ff" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M17 13l14 11-14 11V13z" fill="#a78bfa"/>
+    <path d="M13 37h22" stroke="#6c63ff" stroke-width="2.5" stroke-linecap="round"/>
   </svg>
   <h1>Video <span>Downloader</span></h1>
 </header>
@@ -312,7 +320,7 @@
   <div class="card">
     <div class="card-title">Paste a video URL</div>
     <div class="url-row">
-      <input type="url" id="url-input" placeholder="https://www.youtube.com/watch?v=..." />
+      <input type="url" id="url-input" placeholder="https://www.youtube.com/watch?v=…" />
       <button class="btn-primary" id="fetch-btn" onclick="fetchInfo()">
         <span id="fetch-label">Get Video</span>
       </button>
@@ -325,13 +333,14 @@
     <div class="preview-inner">
       <div class="thumb-wrap">
         <img id="thumb" src="" alt="thumbnail" />
+        <span class="duration-badge" id="vid-duration"></span>
       </div>
       <div class="preview-meta">
         <h2 id="vid-title"></h2>
         <div class="meta-pills">
           <span class="pill" id="vid-uploader"></span>
-          <span class="pill" id="vid-duration"></span>
           <span class="pill" id="vid-views"></span>
+          <span class="pill pill-res" id="vid-maxres"></span>
         </div>
       </div>
     </div>
@@ -339,37 +348,50 @@
 
   <!-- Format Selection -->
   <div class="card" id="format-section">
-    <div class="card-title">Select Format</div>
+    <div class="card-title">Select Quality</div>
     <div class="format-tabs">
-      <button class="tab-btn active" onclick="switchTab('preset')">Recommended</button>
+      <button class="tab-btn active" onclick="switchTab('preset')">Quality Presets</button>
       <button class="tab-btn" onclick="switchTab('all')">All Formats</button>
     </div>
-    <div class="format-list" id="format-list"></div>
+    <div id="tab-preset">
+      <div class="preset-grid" id="preset-grid"></div>
+    </div>
+    <div id="tab-all" style="display:none">
+      <div class="format-list" id="format-list"></div>
+    </div>
     <div class="dl-btn-row">
-      <button class="btn-primary" id="dl-btn" onclick="startDownload()" disabled>
-        Download
-      </button>
-      <span id="sel-label" style="font-size:.82rem;color:var(--muted)">No format selected</span>
+      <button class="btn-primary" id="dl-btn" onclick="startDownload()" disabled>Download</button>
+      <span id="sel-label">No format selected</span>
     </div>
   </div>
 
   <!-- Progress -->
   <div class="card" id="progress-section">
-    <div class="card-title">Download Progress</div>
-    <div class="status-text running" id="status-text">Starting…</div>
+    <div class="card-title">Downloading</div>
+    <div class="prog-header">
+      <div class="status-text running" id="status-text">Starting…</div>
+      <div class="prog-pct" id="prog-pct">0%</div>
+    </div>
     <div class="progress-bar-wrap">
       <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
     </div>
-    <div class="progress-meta">
-      <span id="prog-pct">0%</span>
-      <span id="prog-speed"></span>
-      <span id="prog-eta"></span>
+    <div class="prog-stats">
+      <div>Speed <span id="prog-speed">—</span></div>
+      <div>ETA <span id="prog-eta">—</span></div>
+      <div>Size <span id="prog-size">—</span></div>
     </div>
-    <div id="dl-ready" style="margin-top:1rem;display:none">
-      <button class="btn-success" id="save-btn" onclick="saveFile()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Save File
-      </button>
+    <div id="dl-ready">
+      <div class="done-row">
+        <button class="btn-success" onclick="saveFile()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Save to Device
+        </button>
+        <div class="file-info" id="file-info"></div>
+      </div>
     </div>
   </div>
 
@@ -378,19 +400,35 @@
 <div id="toast"></div>
 
 <script>
+  // ── State ──────────────────────────────────────────────
   let currentTaskId = null;
   let pollTimer = null;
   let selectedFormat = null;
-  let allFormats = [];
-  let presetFormats = [];
   let activeTab = 'preset';
+  let allFormats = [];
+  let presets = [];
 
+  // Tag colour map
+  const TAG_COLORS = {
+    gold:   { bg: '#f59e0b22', fg: '#f59e0b' },
+    purple: { bg: '#a855f722', fg: '#c084fc' },
+    blue:   { bg: '#3b82f622', fg: '#60a5fa' },
+    green:  { bg: '#22c55e22', fg: '#4ade80' },
+    orange: { bg: '#f9731622', fg: '#fb923c' },
+    gray:   { bg: '#6b728022', fg: '#9ca3af' },
+    teal:   { bg: '#14b8a622', fg: '#2dd4bf' },
+  };
+
+  // ── Fetch video info ────────────────────────────────────
   async function fetchInfo() {
     const url = document.getElementById('url-input').value.trim();
     if (!url) return toast('Please paste a video URL', true);
 
-    setBusy(true, 'Fetching…');
-    hideProgress();
+    setBusy(true);
+    hideSection('preview');
+    hideSection('format-section');
+    hideSection('progress-section');
+    selectedFormat = null;
 
     try {
       const res = await fetch('/api/info', {
@@ -399,80 +437,113 @@
         body: JSON.stringify({ url }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Error fetching info');
+      if (!res.ok) throw new Error(data.detail || 'Could not fetch video info');
 
-      showPreview(data);
-      showFormats(data);
+      renderPreview(data);
+      renderFormats(data);
     } catch (e) {
       toast(e.message, true);
     } finally {
-      setBusy(false, 'Get Video');
+      setBusy(false);
     }
   }
 
-  function showPreview(data) {
+  // ── Preview ─────────────────────────────────────────────
+  function renderPreview(data) {
     document.getElementById('thumb').src = data.thumbnail || '';
     document.getElementById('vid-title').textContent = data.title || 'Unknown';
-    document.getElementById('vid-uploader').textContent = data.uploader || '';
-    document.getElementById('vid-duration').textContent = data.duration ? `⏱ ${data.duration}` : '';
-    const views = data.view_count ? `👁 ${Number(data.view_count).toLocaleString()} views` : '';
+    document.getElementById('vid-duration').textContent = data.duration || '';
+    document.getElementById('vid-uploader').textContent = data.uploader ? '👤 ' + data.uploader : '';
+    const views = data.view_count ? '👁 ' + Number(data.view_count).toLocaleString() : '';
     document.getElementById('vid-views').textContent = views;
-    document.getElementById('preview').style.display = 'block';
+    const maxRes = data.max_height ? `Up to ${data.max_height}p` : '';
+    document.getElementById('vid-maxres').textContent = maxRes;
+    showSection('preview');
   }
 
-  function showFormats(data) {
-    presetFormats = data.preset_formats || [];
+  // ── Formats ─────────────────────────────────────────────
+  function renderFormats(data) {
+    presets = data.presets || [];
     allFormats = data.formats || [];
     activeTab = 'preset';
-    updateTabButtons();
-    renderFormats(presetFormats);
-    document.getElementById('format-section').style.display = 'block';
+    updateTabBtns();
+    renderPresetGrid(data.max_height || 0);
+    renderAllFormats();
+    showSection('format-section');
+  }
+
+  function renderPresetGrid(maxHeight) {
+    const grid = document.getElementById('preset-grid');
+    grid.innerHTML = '';
+    presets.forEach((p, i) => {
+      const colors = TAG_COLORS[p.tag_color] || TAG_COLORS.blue;
+      const unavailable = p.height && maxHeight && p.height > maxHeight;
+
+      const card = document.createElement('div');
+      card.className = 'preset-card' + (unavailable ? ' unavailable' : '');
+      card.style.setProperty('--tag-color', colors.fg);
+      card.innerHTML = `
+        <span class="preset-tag" style="background:${colors.bg};color:${colors.fg}">${p.tag}</span>
+        <div class="preset-label">${p.label}</div>
+        <div class="preset-desc">${p.desc}</div>
+      `;
+      if (!unavailable) {
+        card.onclick = () => selectPreset(p, card);
+      }
+      grid.appendChild(card);
+    });
+  }
+
+  function renderAllFormats() {
+    const list = document.getElementById('format-list');
+    list.innerHTML = '';
+    allFormats.forEach(f => {
+      const row = document.createElement('div');
+      row.className = 'format-row';
+      row.innerHTML = `
+        <span class="kind-dot ${f.kind}"></span>
+        <span class="fr-label">${f.label}</span>
+        ${f.size ? `<span class="fr-size">${f.size}</span>` : ''}
+      `;
+      row.onclick = () => selectRawFormat(f, row);
+      list.appendChild(row);
+    });
+  }
+
+  function selectPreset(p, el) {
+    document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedFormat = { format_id: p.format_id, label: p.label };
+    document.getElementById('sel-label').textContent = p.label;
+    document.getElementById('dl-btn').disabled = false;
+  }
+
+  function selectRawFormat(f, el) {
+    document.querySelectorAll('.format-row').forEach(r => r.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedFormat = { format_id: f.format_id, label: f.label };
+    document.getElementById('sel-label').textContent = f.label;
+    document.getElementById('dl-btn').disabled = false;
   }
 
   function switchTab(tab) {
     activeTab = tab;
-    updateTabButtons();
+    updateTabBtns();
+    document.getElementById('tab-preset').style.display = tab === 'preset' ? '' : 'none';
+    document.getElementById('tab-all').style.display   = tab === 'all'    ? '' : 'none';
+    // Reset selection when switching tabs
     selectedFormat = null;
-    updateDlBtn();
-    renderFormats(tab === 'preset' ? presetFormats : allFormats);
+    document.getElementById('sel-label').textContent = 'No format selected';
+    document.getElementById('dl-btn').disabled = true;
   }
 
-  function updateTabButtons() {
-    document.querySelectorAll('.tab-btn').forEach((b, i) => {
-      b.classList.toggle('active', (i === 0 && activeTab === 'preset') || (i === 1 && activeTab === 'all'));
-    });
+  function updateTabBtns() {
+    const btns = document.querySelectorAll('.tab-btn');
+    btns[0].classList.toggle('active', activeTab === 'preset');
+    btns[1].classList.toggle('active', activeTab === 'all');
   }
 
-  function renderFormats(list) {
-    const el = document.getElementById('format-list');
-    el.innerHTML = '';
-    list.forEach(f => {
-      const item = document.createElement('div');
-      item.className = 'format-item';
-      item.dataset.fid = f.format_id;
-      const kindClass = `kind-${f.kind}`;
-      item.innerHTML = `
-        <span class="kind-badge ${kindClass}">${f.kind}</span>
-        <span class="f-label">${f.label}</span>
-        ${f.size ? `<span class="f-size">${f.size}</span>` : ''}
-      `;
-      item.onclick = () => selectFormat(f, item);
-      el.appendChild(item);
-    });
-  }
-
-  function selectFormat(f, el) {
-    document.querySelectorAll('.format-item').forEach(i => i.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedFormat = f;
-    document.getElementById('sel-label').textContent = f.label;
-    updateDlBtn();
-  }
-
-  function updateDlBtn() {
-    document.getElementById('dl-btn').disabled = !selectedFormat;
-  }
-
+  // ── Download ─────────────────────────────────────────────
   async function startDownload() {
     if (!selectedFormat) return;
     const url = document.getElementById('url-input').value.trim();
@@ -484,14 +555,18 @@
       const res = await fetch('/api/download/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, format_id: selectedFormat.format_id, task_id: currentTaskId }),
+        body: JSON.stringify({
+          url,
+          format_id: selectedFormat.format_id,
+          task_id: currentTaskId,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || 'Failed to start download');
       pollProgress(data.task_id);
     } catch (e) {
       toast(e.message, true);
-      hideProgress();
+      hideSection('progress-section');
     }
   }
 
@@ -504,27 +579,30 @@
         updateProgress(d);
         if (d.status === 'done' || d.status === 'error') clearInterval(pollTimer);
       } catch {}
-    }, 800);
+    }, 700);
   }
 
   function updateProgress(d) {
     const pct = d.progress || 0;
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('prog-pct').textContent = pct + '%';
-    document.getElementById('prog-speed').textContent = d.speed || '';
-    document.getElementById('prog-eta').textContent = d.eta ? `ETA: ${d.eta}` : '';
+    document.getElementById('prog-speed').textContent = d.speed || '—';
+    document.getElementById('prog-eta').textContent   = d.eta   || '—';
+    document.getElementById('prog-size').textContent  = d.filesize || '—';
 
     const st = document.getElementById('status-text');
     if (d.status === 'done') {
       st.className = 'status-text done';
-      st.textContent = `Done! "${d.title || 'Video'}" is ready.`;
+      st.textContent = 'Download complete!';
+      const info = document.getElementById('file-info');
+      info.innerHTML = `<strong>${d.filename || ''}</strong>${d.filesize ? '  ·  ' + d.filesize : ''}`;
       document.getElementById('dl-ready').style.display = 'block';
     } else if (d.status === 'error') {
       st.className = 'status-text error';
-      st.textContent = `Error: ${d.error}`;
+      st.textContent = 'Error: ' + (d.error || 'unknown');
     } else if (d.status === 'processing') {
-      st.className = 'status-text running';
-      st.textContent = 'Processing / merging streams…';
+      st.className = 'status-text processing';
+      st.textContent = 'Merging streams…';
     } else {
       st.className = 'status-text running';
       st.textContent = 'Downloading…';
@@ -532,37 +610,36 @@
   }
 
   function saveFile() {
-    if (!currentTaskId) return;
-    window.location.href = `/api/download/file/${currentTaskId}`;
+    if (currentTaskId) window.location.href = `/api/download/file/${currentTaskId}`;
   }
 
+  // ── Progress UI ──────────────────────────────────────────
   function showProgress() {
     const sec = document.getElementById('progress-section');
     sec.style.display = 'block';
     document.getElementById('dl-ready').style.display = 'none';
     document.getElementById('progress-fill').style.width = '0%';
     document.getElementById('prog-pct').textContent = '0%';
-    document.getElementById('prog-speed').textContent = '';
-    document.getElementById('prog-eta').textContent = '';
+    document.getElementById('prog-speed').textContent = '—';
+    document.getElementById('prog-eta').textContent = '—';
+    document.getElementById('prog-size').textContent = '—';
     const st = document.getElementById('status-text');
     st.className = 'status-text running';
     st.textContent = 'Starting download…';
     sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  function hideProgress() {
-    document.getElementById('progress-section').style.display = 'none';
-  }
+  // ── Helpers ──────────────────────────────────────────────
+  function showSection(id)  { document.getElementById(id).style.display = 'block'; }
+  function hideSection(id)  { document.getElementById(id).style.display = 'none'; }
 
-  function setBusy(busy, label) {
+  function setBusy(busy) {
     const btn = document.getElementById('fetch-btn');
     const lbl = document.getElementById('fetch-label');
     btn.disabled = busy;
-    if (busy) {
-      lbl.innerHTML = `<span style="display:flex;align-items:center;gap:.5rem"><span class="spinner"></span>${label}</span>`;
-    } else {
-      lbl.textContent = label;
-    }
+    lbl.innerHTML = busy
+      ? `<span style="display:flex;align-items:center;gap:.5rem"><span class="spinner"></span>Fetching…</span>`
+      : 'Get Video';
   }
 
   function toast(msg, isError = false) {
@@ -572,7 +649,6 @@
     setTimeout(() => t.className = '', 3500);
   }
 
-  // Allow pressing Enter in URL input
   document.getElementById('url-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') fetchInfo();
   });

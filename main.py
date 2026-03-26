@@ -16,7 +16,7 @@ from pydantic import BaseModel
 
 app = FastAPI(title="Video Downloader")
 
-# Use /tmp on Railway (ephemeral but writable); falls back to local ./downloads
+# Use /tmp on Railway (ephemeral but writable)
 DOWNLOAD_DIR = Path("/tmp/vdl_downloads")
 DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -30,12 +30,8 @@ class URLRequest(BaseModel):
 
 class DownloadRequest(BaseModel):
     url: str
-    format_id: Optional[str] = "bestvideo+bestaudio/best"
+    format_id: Optional[str] = None
     task_id: Optional[str] = None
-
-
-def sanitize_filename(name: str) -> str:
-    return re.sub(r'[<>:"/\\|?*]', "_", name)
 
 
 def get_info_opts():
@@ -45,6 +41,69 @@ def get_info_opts():
         "extract_flat": False,
         "skip_download": True,
     }
+
+
+# Quality presets — ordered best to worst, all output as MP4
+PRESETS = [
+    {
+        "format_id": "bestvideo[ext=mp4][height<=2160]+bestaudio[ext=m4a]/bestvideo[height<=2160]+bestaudio/best",
+        "label": "4K / Best Available",
+        "desc": "Highest possible resolution",
+        "tag": "4K",
+        "tag_color": "gold",
+    },
+    {
+        "format_id": "bestvideo[ext=mp4][height<=1440]+bestaudio[ext=m4a]/bestvideo[height<=1440]+bestaudio/best",
+        "label": "1440p (2K)",
+        "desc": "Ultra-sharp, great for large screens",
+        "tag": "2K",
+        "tag_color": "purple",
+    },
+    {
+        "format_id": "bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best",
+        "label": "1080p Full HD",
+        "desc": "Best all-round quality",
+        "tag": "FHD",
+        "tag_color": "blue",
+    },
+    {
+        "format_id": "bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best",
+        "label": "720p HD",
+        "desc": "Good quality, smaller file",
+        "tag": "HD",
+        "tag_color": "green",
+    },
+    {
+        "format_id": "bestvideo[ext=mp4][height<=480]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best",
+        "label": "480p SD",
+        "desc": "Compact size, decent quality",
+        "tag": "SD",
+        "tag_color": "orange",
+    },
+    {
+        "format_id": "bestvideo[ext=mp4][height<=360]+bestaudio[ext=m4a]/bestvideo[height<=360]+bestaudio/best",
+        "label": "360p Low",
+        "desc": "Smallest video file",
+        "tag": "LOW",
+        "tag_color": "gray",
+    },
+    {
+        "format_id": "bestaudio[ext=m4a]/bestaudio/best",
+        "label": "Audio Only (M4A)",
+        "desc": "Best audio quality, no video",
+        "tag": "AAC",
+        "tag_color": "teal",
+    },
+    {
+        "format_id": "bestaudio/best --extract-audio --audio-format mp3",
+        "label": "Audio Only (MP3)",
+        "desc": "Universal MP3 audio",
+        "tag": "MP3",
+        "tag_color": "teal",
+        "audio_only": True,
+        "audio_format": "mp3",
+    },
+]
 
 
 @app.get("/")
@@ -59,14 +118,18 @@ async def get_video_info(req: URLRequest):
             info = ydl.extract_info(req.url, download=False)
             info = ydl.sanitize_info(info)
 
+        # Build available-format list for "All Formats" tab
         formats = []
         seen = set()
         for f in info.get("formats", []):
             fid = f.get("format_id", "")
             height = f.get("height")
+            width = f.get("width")
             ext = f.get("ext", "")
             vcodec = f.get("vcodec", "none")
             acodec = f.get("acodec", "none")
+            fps = f.get("fps")
+            tbr = f.get("tbr")
             note = f.get("format_note", "")
             filesize = f.get("filesize") or f.get("filesize_approx")
 
@@ -77,16 +140,22 @@ async def get_video_info(req: URLRequest):
             has_audio = acodec != "none"
 
             if has_video and has_audio:
-                label = f"{height}p {ext} (video+audio)" if height else f"{ext} (video+audio)"
+                res = f"{height}p" if height else ext
+                fps_str = f" {int(fps)}fps" if fps and fps > 30 else ""
+                label = f"{res}{fps_str} · {ext} · video+audio"
                 kind = "combined"
             elif has_video:
-                label = f"{height}p {ext} (video only)" if height else f"{ext} (video only)"
+                res = f"{height}p" if height else ext
+                fps_str = f" {int(fps)}fps" if fps and fps > 30 else ""
+                bitrate = f" · {int(tbr)}kbps" if tbr else ""
+                label = f"{res}{fps_str}{bitrate} · {ext} · video"
                 kind = "video"
             else:
-                label = f"{ext} audio ({note})" if note else f"{ext} audio"
+                bitrate = f" · {int(tbr)}kbps" if tbr else ""
+                label = f"{ext} audio{bitrate}" + (f" · {note}" if note else "")
                 kind = "audio"
 
-            key = (height, ext, kind)
+            key = (height, ext, kind, fps)
             if key in seen:
                 continue
             seen.add(key)
@@ -94,30 +163,29 @@ async def get_video_info(req: URLRequest):
             size_str = ""
             if filesize:
                 mb = filesize / (1024 * 1024)
-                size_str = f"~{mb:.1f} MB"
+                size_str = f"{mb:.1f} MB"
 
             formats.append({
                 "format_id": fid,
                 "label": label,
                 "kind": kind,
                 "height": height,
+                "fps": fps,
                 "ext": ext,
                 "size": size_str,
+                "tbr": tbr,
             })
 
+        # Sort: combined first, then by resolution desc, then fps desc
         formats.sort(key=lambda x: (
-            x["kind"] != "combined",
-            x["kind"] != "video",
+            {"combined": 0, "video": 1, "audio": 2}.get(x["kind"], 3),
             -(x["height"] or 0),
+            -(x["fps"] or 0),
+            -(x["tbr"] or 0),
         ))
 
-        preset_formats = [
-            {"format_id": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best", "label": "Best Quality (auto-merge)", "kind": "best", "height": None, "ext": "mp4", "size": ""},
-            {"format_id": "bestvideo[height<=1080]+bestaudio/best[height<=1080]", "label": "1080p (best available)", "kind": "best", "height": 1080, "ext": "mp4", "size": ""},
-            {"format_id": "bestvideo[height<=720]+bestaudio/best[height<=720]", "label": "720p (best available)", "kind": "best", "height": 720, "ext": "mp4", "size": ""},
-            {"format_id": "bestvideo[height<=480]+bestaudio/best[height<=480]", "label": "480p (best available)", "kind": "best", "height": 480, "ext": "mp4", "size": ""},
-            {"format_id": "bestaudio/best", "label": "Audio only (best quality)", "kind": "audio", "height": None, "ext": "m4a", "size": ""},
-        ]
+        # Detect max available resolution to highlight supported presets
+        max_height = max((f.get("height") or 0 for f in info.get("formats", [])), default=0)
 
         return {
             "title": info.get("title", "Unknown"),
@@ -125,8 +193,10 @@ async def get_video_info(req: URLRequest):
             "duration": info.get("duration_string", ""),
             "uploader": info.get("uploader", ""),
             "view_count": info.get("view_count"),
-            "preset_formats": preset_formats,
-            "formats": formats[:40],
+            "like_count": info.get("like_count"),
+            "max_height": max_height,
+            "presets": PRESETS,
+            "formats": formats[:60],
         }
     except yt_dlp.utils.DownloadError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -137,9 +207,17 @@ async def get_video_info(req: URLRequest):
 @app.post("/api/download/start")
 async def start_download(req: DownloadRequest):
     task_id = req.task_id or str(uuid.uuid4())
-    tasks[task_id] = {"status": "starting", "progress": 0, "filename": None, "error": None, "title": ""}
-
-    asyncio.create_task(_run_download(task_id, req.url, req.format_id))
+    tasks[task_id] = {
+        "status": "starting",
+        "progress": 0,
+        "filename": None,
+        "error": None,
+        "title": "",
+        "speed": "",
+        "eta": "",
+        "filesize": "",
+    }
+    asyncio.create_task(_run_download(task_id, req.url, req.format_id or PRESETS[2]["format_id"]))
     return {"task_id": task_id}
 
 
@@ -151,34 +229,64 @@ async def _run_download(task_id: str, url: str, format_id: str):
 def _download_sync(task_id: str, url: str, format_id: str):
     output_path = DOWNLOAD_DIR / task_id
     output_path.mkdir(exist_ok=True)
-    output_template = str(output_path / "%(title).100s.%(ext)s")
+    output_template = str(output_path / "%(title).120s [%(height)sp].%(ext)s")
+
+    # Check if this is an MP3 preset (special handling)
+    is_mp3 = "mp3" in format_id
+    clean_format = "bestaudio/best" if is_mp3 else format_id
 
     def progress_hook(d):
         if d["status"] == "downloading":
             total = d.get("total_bytes") or d.get("total_bytes_estimate", 0)
             downloaded = d.get("downloaded_bytes", 0)
             percent = (downloaded / total * 100) if total else 0
-            speed = d.get("_speed_str", "")
-            eta = d.get("_eta_str", "")
+            speed = d.get("_speed_str", "").strip()
+            eta = d.get("_eta_str", "").strip()
+            size = ""
+            if total:
+                mb = total / (1024 * 1024)
+                size = f"{mb:.1f} MB"
             tasks[task_id].update({
                 "status": "downloading",
                 "progress": round(percent, 1),
                 "speed": speed,
                 "eta": eta,
+                "filesize": size,
             })
         elif d["status"] == "finished":
-            tasks[task_id].update({"status": "processing", "progress": 99})
+            tasks[task_id].update({"status": "processing", "progress": 99, "eta": ""})
         elif d["status"] == "error":
-            tasks[task_id].update({"status": "error", "error": "Download failed"})
+            tasks[task_id].update({"status": "error", "error": "Download failed during transfer"})
 
     ydl_opts = {
-        "format": format_id,
+        "format": clean_format,
         "outtmpl": output_template,
         "progress_hooks": [progress_hook],
         "quiet": True,
         "no_warnings": True,
         "merge_output_format": "mp4",
+        # ffmpeg post-processing for best quality merge
+        "postprocessor_args": {
+            "ffmpeg": [
+                "-movflags", "+faststart",  # web-optimised MP4 (moov atom at front)
+            ]
+        },
+        "prefer_ffmpeg": True,
+        "keepvideo": False,
+        # Re-encode to H.264 only if codec is incompatible with MP4
+        "remux_video": "mp4",
     }
+
+    if is_mp3:
+        ydl_opts["postprocessors"] = [{
+            "key": "FFmpegExtractAudio",
+            "preferredcodec": "mp3",
+            "preferredquality": "320",  # 320kbps MP3
+        }]
+        ydl_opts.pop("merge_output_format", None)
+        ydl_opts.pop("remux_video", None)
+        # Use simpler output template for audio
+        ydl_opts["outtmpl"] = str(output_path / "%(title).120s.%(ext)s")
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -186,12 +294,15 @@ def _download_sync(task_id: str, url: str, format_id: str):
             title = info.get("title", "video")
             tasks[task_id]["title"] = title
 
-        files = list(output_path.glob("*"))
+        files = [f for f in output_path.glob("*") if f.suffix not in (".part", ".ytdl")]
         if files:
+            # Pick the largest file (the final merged output)
+            best = max(files, key=lambda f: f.stat().st_size)
             tasks[task_id].update({
                 "status": "done",
                 "progress": 100,
-                "filename": files[0].name,
+                "filename": best.name,
+                "filesize": f"{best.stat().st_size / (1024*1024):.1f} MB",
             })
         else:
             tasks[task_id].update({"status": "error", "error": "File not found after download"})
