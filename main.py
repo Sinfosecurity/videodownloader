@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import re
 import uuid
 from pathlib import Path
@@ -13,6 +14,19 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+
+# Cookies file path — write once at startup from COOKIES_CONTENT env var
+COOKIES_FILE = Path("/tmp/vdl_cookies.txt")
+
+def _init_cookies():
+    """Write cookies from env var to a file yt-dlp can read."""
+    content = os.environ.get("COOKIES_CONTENT", "").strip()
+    if content:
+        COOKIES_FILE.write_text(content)
+        return True
+    return False
+
+HAS_COOKIES = _init_cookies()
 
 app = FastAPI(title="Video Downloader")
 
@@ -36,18 +50,20 @@ class DownloadRequest(BaseModel):
 
 
 def get_info_opts():
-    return {
+    opts = {
         "quiet": True,
         "no_warnings": True,
         "extract_flat": False,
         "skip_download": True,
-        # android_vr + tv avoids YouTube SABR streaming restrictions entirely
         "extractor_args": {
             "youtube": {
                 "player_client": ["android_vr", "tv_simply"],
             }
         },
     }
+    if HAS_COOKIES:
+        opts["cookiefile"] = str(COOKIES_FILE)
+    return opts
 
 
 # Quality presets — ordered best to worst, all output as MP4
@@ -330,6 +346,8 @@ def _download_sync(task_id: str, url: str, format_id: str, whatsapp: bool = Fals
         "prefer_ffmpeg": True,
         "keepvideo": False,
     }
+    if HAS_COOKIES:
+        ydl_opts["cookiefile"] = str(COOKIES_FILE)
 
     if is_mp3:
         ydl_opts["postprocessors"] = [{
