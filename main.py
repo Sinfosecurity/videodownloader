@@ -117,6 +117,12 @@ async def index():
     return FileResponse(str(BASE_DIR / "static" / "index.html"))
 
 
+@app.get("/api/version")
+async def version():
+    import yt_dlp
+    return {"yt_dlp": yt_dlp.version.__version__}
+
+
 @app.post("/api/info")
 async def get_video_info(req: URLRequest):
     try:

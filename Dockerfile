@@ -8,9 +8,8 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-# Install deps; upgrade yt-dlp separately so it always gets the freshest build
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir "yt-dlp==2025.10.14"
+# cache-bust: 2025.10.14
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
