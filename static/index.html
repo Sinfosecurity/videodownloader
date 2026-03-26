@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Downloader</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a24;
+      --surface2: #22222f;
+      --border: #2e2e3e;
+      --accent: #6c63ff;
+      --accent2: #a78bfa;
+      --text: #e8e8f0;
+      --muted: #7b7b9a;
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Header ── */
+    header {
+      width: 100%;
+      padding: 1.25rem 2rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+    header svg { width: 32px; height: 32px; flex-shrink: 0; }
+    header h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -.5px; }
+    header span { color: var(--accent2); }
+    .badge {
+      margin-left: auto;
+      font-size: .7rem;
+      background: #6c63ff22;
+      color: var(--accent2);
+      border: 1px solid #6c63ff55;
+      padding: .2rem .6rem;
+      border-radius: 99px;
+      font-weight: 600;
+    }
+
+    /* ── Main ── */
+    main {
+      width: 100%;
+      max-width: 780px;
+      padding: 2.5rem 1.5rem 4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* ── URL Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+    .card-title {
+      font-size: .8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: .9rem;
+    }
+
+    .url-row {
+      display: flex;
+      gap: .75rem;
+    }
+    .url-row input {
+      flex: 1;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: .75rem 1rem;
+      color: var(--text);
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .url-row input:focus { border-color: var(--accent); }
+    .url-row input::placeholder { color: var(--muted); }
+
+    button {
+      cursor: pointer;
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-weight: 600;
+      border-radius: 10px;
+      transition: all .2s;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      padding: .75rem 1.4rem;
+      font-size: .9rem;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: #7b74ff; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+      padding: .7rem 1.4rem;
+      font-size: .9rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .btn-success:hover { background: #16a34a; }
+
+    /* ── Video preview ── */
+    #preview { display: none; }
+    .preview-inner {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+    }
+    .thumb-wrap {
+      flex-shrink: 0;
+      width: 140px;
+      height: 90px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface2);
+    }
+    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .preview-meta { flex: 1; min-width: 0; }
+    .preview-meta h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: .4rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .meta-pills { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .pill {
+      font-size: .72rem;
+      padding: .2rem .6rem;
+      border-radius: 99px;
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    /* ── Format selector ── */
+    #format-section { display: none; }
+    .format-tabs {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1rem;
+    }
+    .tab-btn {
+      background: var(--bg);
+      color: var(--muted);
+      padding: .4rem .9rem;
+      font-size: .8rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+    }
+    .tab-btn.active {
+      background: #6c63ff22;
+      color: var(--accent2);
+      border-color: var(--accent);
+    }
+
+    .format-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .6rem;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: .25rem;
+    }
+    .format-list::-webkit-scrollbar { width: 4px; }
+    .format-list::-webkit-scrollbar-track { background: transparent; }
+    .format-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .format-item {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: .65rem .9rem;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex;
+      flex-direction: column;
+      gap: .2rem;
+    }
+    .format-item:hover { border-color: var(--accent); background: #6c63ff0a; }
+    .format-item.selected { border-color: var(--accent); background: #6c63ff18; }
+    .format-item .f-label { font-size: .82rem; font-weight: 600; }
+    .format-item .f-size { font-size: .72rem; color: var(--muted); }
+    .kind-badge {
+      display: inline-block;
+      font-size: .65rem;
+      padding: .1rem .4rem;
+      border-radius: 4px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .kind-best { background: #6c63ff22; color: var(--accent2); }
+    .kind-combined { background: #22c55e22; color: #4ade80; }
+    .kind-video { background: #f59e0b22; color: #fbbf24; }
+    .kind-audio { background: #06b6d422; color: #22d3ee; }
+
+    .dl-btn-row {
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* ── Progress ── */
+    #progress-section { display: none; }
+    .progress-bar-wrap {
+      background: var(--bg);
+      border-radius: 99px;
+      height: 8px;
+      overflow: hidden;
+      margin: .75rem 0 .4rem;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width .4s ease;
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: .78rem;
+      color: var(--muted);
+    }
+    .status-text {
+      font-size: .88rem;
+      font-weight: 600;
+      margin-bottom: .5rem;
+    }
+    .status-text.done { color: var(--success); }
+    .status-text.error { color: var(--error); }
+    .status-text.running { color: var(--accent2); }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: .75rem 1.25rem;
+      border-radius: 10px;
+      font-size: .88rem;
+      transition: transform .3s ease;
+      z-index: 999;
+      white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+    #toast.toast-error { border-color: var(--error); color: var(--error); }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid #ffffff44;
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Responsive ── */
+    @media (max-width: 540px) {
+      .preview-inner { flex-direction: column; }
+      .thumb-wrap { width: 100%; height: 180px; }
+      .format-list { grid-template-columns: 1fr; }
+      .url-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="24" cy="24" r="24" fill="#6c63ff22"/>
+    <path d="M16 14l16 10-16 10V14z" fill="#a78bfa"/>
+    <path d="M14 36h20" stroke="#6c63ff" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>
+  <h1>Video <span>Downloader</span></h1>
+  <span class="badge">yt-dlp powered</span>
+</header>
+
+<main>
+
+  <!-- URL Input -->
+  <div class="card">
+    <div class="card-title">Paste a video URL</div>
+    <div class="url-row">
+      <input type="url" id="url-input" placeholder="https://www.youtube.com/watch?v=..." />
+      <button class="btn-primary" id="fetch-btn" onclick="fetchInfo()">
+        <span id="fetch-label">Get Video</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Video Preview -->
+  <div class="card" id="preview">
+    <div class="card-title">Video Info</div>
+    <div class="preview-inner">
+      <div class="thumb-wrap">
+        <img id="thumb" src="" alt="thumbnail" />
+      </div>
+      <div class="preview-meta">
+        <h2 id="vid-title"></h2>
+        <div class="meta-pills">
+          <span class="pill" id="vid-uploader"></span>
+          <span class="pill" id="vid-duration"></span>
+          <span class="pill" id="vid-views"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Format Selection -->
+  <div class="card" id="format-section">
+    <div class="card-title">Select Format</div>
+    <div class="format-tabs">
+      <button class="tab-btn active" onclick="switchTab('preset')">Recommended</button>
+      <button class="tab-btn" onclick="switchTab('all')">All Formats</button>
+    </div>
+    <div class="format-list" id="format-list"></div>
+    <div class="dl-btn-row">
+      <button class="btn-primary" id="dl-btn" onclick="startDownload()" disabled>
+        Download
+      </button>
+      <span id="sel-label" style="font-size:.82rem;color:var(--muted)">No format selected</span>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="card" id="progress-section">
+    <div class="card-title">Download Progress</div>
+    <div class="status-text running" id="status-text">Starting…</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="progress-meta">
+      <span id="prog-pct">0%</span>
+      <span id="prog-speed"></span>
+      <span id="prog-eta"></span>
+    </div>
+    <div id="dl-ready" style="margin-top:1rem;display:none">
+      <button class="btn-success" id="save-btn" onclick="saveFile()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Save File
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+  let currentTaskId = null;
+  let pollTimer = null;
+  let selectedFormat = null;
+  let allFormats = [];
+  let presetFormats = [];
+  let activeTab = 'preset';
+
+  async function fetchInfo() {
+    const url = document.getElementById('url-input').value.trim();
+    if (!url) return toast('Please paste a video URL', true);
+
+    setBusy(true, 'Fetching…');
+    hideProgress();
+
+    try {
+      const res = await fetch('/api/info', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Error fetching info');
+
+      showPreview(data);
+      showFormats(data);
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      setBusy(false, 'Get Video');
+    }
+  }
+
+  function showPreview(data) {
+    document.getElementById('thumb').src = data.thumbnail || '';
+    document.getElementById('vid-title').textContent = data.title || 'Unknown';
+    document.getElementById('vid-uploader').textContent = data.uploader || '';
+    document.getElementById('vid-duration').textContent = data.duration ? `⏱ ${data.duration}` : '';
+    const views = data.view_count ? `👁 ${Number(data.view_count).toLocaleString()} views` : '';
+    document.getElementById('vid-views').textContent = views;
+    document.getElementById('preview').style.display = 'block';
+  }
+
+  function showFormats(data) {
+    presetFormats = data.preset_formats || [];
+    allFormats = data.formats || [];
+    activeTab = 'preset';
+    updateTabButtons();
+    renderFormats(presetFormats);
+    document.getElementById('format-section').style.display = 'block';
+  }
+
+  function switchTab(tab) {
+    activeTab = tab;
+    updateTabButtons();
+    selectedFormat = null;
+    updateDlBtn();
+    renderFormats(tab === 'preset' ? presetFormats : allFormats);
+  }
+
+  function updateTabButtons() {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+      b.classList.toggle('active', (i === 0 && activeTab === 'preset') || (i === 1 && activeTab === 'all'));
+    });
+  }
+
+  function renderFormats(list) {
+    const el = document.getElementById('format-list');
+    el.innerHTML = '';
+    list.forEach(f => {
+      const item = document.createElement('div');
+      item.className = 'format-item';
+      item.dataset.fid = f.format_id;
+      const kindClass = `kind-${f.kind}`;
+      item.innerHTML = `
+        <span class="kind-badge ${kindClass}">${f.kind}</span>
+        <span class="f-label">${f.label}</span>
+        ${f.size ? `<span class="f-size">${f.size}</span>` : ''}
+      `;
+      item.onclick = () => selectFormat(f, item);
+      el.appendChild(item);
+    });
+  }
+
+  function selectFormat(f, el) {
+    document.querySelectorAll('.format-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedFormat = f;
+    document.getElementById('sel-label').textContent = f.label;
+    updateDlBtn();
+  }
+
+  function updateDlBtn() {
+    document.getElementById('dl-btn').disabled = !selectedFormat;
+  }
+
+  async function startDownload() {
+    if (!selectedFormat) return;
+    const url = document.getElementById('url-input').value.trim();
+
+    currentTaskId = crypto.randomUUID();
+    showProgress();
+
+    try {
+      const res = await fetch('/api/download/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, format_id: selectedFormat.format_id, task_id: currentTaskId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Failed to start download');
+      pollProgress(data.task_id);
+    } catch (e) {
+      toast(e.message, true);
+      hideProgress();
+    }
+  }
+
+  function pollProgress(taskId) {
+    clearInterval(pollTimer);
+    pollTimer = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/download/status/${taskId}`);
+        const d = await res.json();
+        updateProgress(d);
+        if (d.status === 'done' || d.status === 'error') clearInterval(pollTimer);
+      } catch {}
+    }, 800);
+  }
+
+  function updateProgress(d) {
+    const pct = d.progress || 0;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('prog-pct').textContent = pct + '%';
+    document.getElementById('prog-speed').textContent = d.speed || '';
+    document.getElementById('prog-eta').textContent = d.eta ? `ETA: ${d.eta}` : '';
+
+    const st = document.getElementById('status-text');
+    if (d.status === 'done') {
+      st.className = 'status-text done';
+      st.textContent = `Done! "${d.title || 'Video'}" is ready.`;
+      document.getElementById('dl-ready').style.display = 'block';
+    } else if (d.status === 'error') {
+      st.className = 'status-text error';
+      st.textContent = `Error: ${d.error}`;
+    } else if (d.status === 'processing') {
+      st.className = 'status-text running';
+      st.textContent = 'Processing / merging streams…';
+    } else {
+      st.className = 'status-text running';
+      st.textContent = 'Downloading…';
+    }
+  }
+
+  function saveFile() {
+    if (!currentTaskId) return;
+    window.location.href = `/api/download/file/${currentTaskId}`;
+  }
+
+  function showProgress() {
+    const sec = document.getElementById('progress-section');
+    sec.style.display = 'block';
+    document.getElementById('dl-ready').style.display = 'none';
+    document.getElementById('progress-fill').style.width = '0%';
+    document.getElementById('prog-pct').textContent = '0%';
+    document.getElementById('prog-speed').textContent = '';
+    document.getElementById('prog-eta').textContent = '';
+    const st = document.getElementById('status-text');
+    st.className = 'status-text running';
+    st.textContent = 'Starting download…';
+    sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function hideProgress() {
+    document.getElementById('progress-section').style.display = 'none';
+  }
+
+  function setBusy(busy, label) {
+    const btn = document.getElementById('fetch-btn');
+    const lbl = document.getElementById('fetch-label');
+    btn.disabled = busy;
+    if (busy) {
+      lbl.innerHTML = `<span style="display:flex;align-items:center;gap:.5rem"><span class="spinner"></span>${label}</span>`;
+    } else {
+      lbl.textContent = label;
+    }
+  }
+
+  function toast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = isError ? 'toast-error show' : 'show';
+    setTimeout(() => t.className = '', 3500);
+  }
+
+  // Allow pressing Enter in URL input
+  document.getElementById('url-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') fetchInfo();
+  });
+</script>
+</body>
+</html>
