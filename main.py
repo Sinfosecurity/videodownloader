@@ -53,6 +53,10 @@ def _init_cookies() -> bool:
 HAS_COOKIES = _init_cookies()
 PROXY_URL   = os.environ.get("PROXY_URL", "").strip() or None
 
+# COOKIES_FROM_BROWSER=chrome  — use local Chrome cookies (best for local dev)
+# Leave unset on Railway and use INSTAGRAM_SESSION_ID / COOKIES_CONTENT instead
+COOKIES_FROM_BROWSER = os.environ.get("COOKIES_FROM_BROWSER", "").strip().lower() or None
+
 
 # ── Models ─────────────────────────────────────────────────────────────────────
 class URLRequest(BaseModel):
@@ -117,7 +121,9 @@ def _common_opts() -> dict:
         "no_warnings":    True,
         "extractor_args": {"youtube": {"player_client": ["android_vr", "tv_simply"]}},
     }
-    if HAS_COOKIES:
+    if COOKIES_FROM_BROWSER:
+        opts["cookiesfrombrowser"] = (COOKIES_FROM_BROWSER,)
+    elif HAS_COOKIES:
         opts["cookiefile"] = str(COOKIES_FILE)
     if PROXY_URL:
         opts["proxy"] = PROXY_URL
