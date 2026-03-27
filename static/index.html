@@ -11,520 +11,389 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #080810;
-      --surface:   #0f0f1a;
-      --surface2:  #161625;
-      --surface3:  #1d1d30;
-      --border:    #ffffff0d;
-      --border2:   #ffffff18;
-      --accent:    #7c6af7;
-      --accent-hi: #9d8fff;
-      --accent-lo: #7c6af722;
-      --text:      #f0f0f8;
-      --text2:     #a0a0c0;
-      --text3:     #55556a;
-      --success:   #34d399;
-      --error:     #f87171;
-      --warn:      #fbbf24;
-
-      --radius-sm: 8px;
-      --radius:    12px;
-      --radius-lg: 18px;
-
-      --shadow: 0 1px 3px #00000040, 0 4px 24px #00000030;
+      --bg:       #080810;
+      --s1:       #0f0f1a;
+      --s2:       #161625;
+      --s3:       #1d1d30;
+      --border:   #ffffff0d;
+      --border2:  #ffffff18;
+      --accent:   #7c6af7;
+      --acchi:    #9d8fff;
+      --acclo:    #7c6af722;
+      --text:     #f0f0f8;
+      --text2:    #a0a0c0;
+      --text3:    #55556a;
+      --ok:       #34d399;
+      --err:      #f87171;
+      --warn:     #fbbf24;
+      --wa:       #25D366;
+      --r:        12px;
+      --rlg:      18px;
+      --rsm:      8px;
+      --shadow:   0 1px 3px #00000040, 0 4px 24px #00000030;
     }
 
     html { scroll-behavior: smooth; }
-
     body {
       font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ─────────────── NAV ─────────────── */
+    /* NAV */
     nav {
       position: sticky; top: 0; z-index: 100;
-      width: 100%;
-      padding: 0 2rem;
-      height: 58px;
+      height: 58px; padding: 0 2rem;
       display: flex; align-items: center;
       background: #08081099;
       backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
     }
-    .nav-logo {
-      display: flex; align-items: center; gap: 10px;
-      text-decoration: none;
-    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
     .logo-icon {
-      width: 30px; height: 30px;
+      width: 30px; height: 30px; border-radius: 8px;
       background: linear-gradient(135deg, var(--accent), #c084fc);
-      border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
     }
     .logo-icon svg { width: 14px; height: 14px; fill: #fff; }
-    .logo-text {
-      font-size: .95rem; font-weight: 600; letter-spacing: -.3px;
-      color: var(--text);
-    }
+    .logo-text { font-size: .95rem; font-weight: 600; color: var(--text); }
 
-    /* ─────────────── HERO ─────────────── */
+    /* HERO */
     .hero {
-      padding: 5rem 1.5rem 3rem;
-      text-align: center;
+      padding: 5rem 1.5rem 3rem; text-align: center;
       display: flex; flex-direction: column; align-items: center; gap: 1rem;
     }
-    .hero-eyebrow {
+    .eyebrow {
       display: inline-flex; align-items: center; gap: .5rem;
       font-size: .72rem; font-weight: 600; letter-spacing: .12em;
-      text-transform: uppercase; color: var(--accent-hi);
-      background: var(--accent-lo); border: 1px solid #7c6af733;
+      text-transform: uppercase; color: var(--acchi);
+      background: var(--acclo); border: 1px solid #7c6af733;
       padding: .3rem .85rem; border-radius: 99px;
     }
-    .hero-eyebrow span { width: 5px; height: 5px; background: var(--accent-hi); border-radius: 50%; }
+    .eyebrow span { width: 5px; height: 5px; background: var(--acchi); border-radius: 50%; }
     .hero h1 {
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 700; letter-spacing: -.04em;
-      line-height: 1.15;
+      font-size: clamp(2rem, 5vw, 3rem); font-weight: 700;
+      letter-spacing: -.04em; line-height: 1.15;
       background: linear-gradient(160deg, #fff 30%, #a0a0cc 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    .hero p {
-      font-size: .95rem; color: var(--text2); max-width: 420px; line-height: 1.65;
-    }
+    .hero p { font-size: .95rem; color: var(--text2); max-width: 420px; line-height: 1.65; }
 
-    /* ─────────────── MAIN CONTAINER ─────────────── */
-    .container {
-      width: 100%; max-width: 680px;
-      margin: 0 auto;
-      padding: 0 1.25rem 6rem;
-      display: flex; flex-direction: column; gap: 1rem;
-    }
+    /* CONTAINER */
+    .wrap { width: 100%; max-width: 680px; margin: 0 auto; padding: 0 1.25rem 6rem; display: flex; flex-direction: column; gap: 1rem; }
 
-    /* ─────────────── URL INPUT ─────────────── */
-    .input-card {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: var(--radius-lg);
-      padding: 1.5rem;
-      box-shadow: var(--shadow);
+    /* CARD */
+    .card {
+      background: var(--s1); border: 1px solid var(--border2);
+      border-radius: var(--rlg); overflow: hidden; box-shadow: var(--shadow);
     }
-    .input-wrap {
+    .card-head {
+      padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: .6rem;
+    }
+    .head-icon {
+      width: 26px; height: 26px; border-radius: 7px;
+      background: var(--acclo); border: 1px solid #7c6af733;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .head-icon svg { width: 13px; height: 13px; stroke: var(--acchi); fill: none; }
+    .head-title { font-size: .78rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text2); }
+    .card-body { padding: 1.5rem; }
+
+    /* URL INPUT */
+    .input-card { background: var(--s1); border: 1px solid var(--border2); border-radius: var(--rlg); padding: 1.5rem; box-shadow: var(--shadow); }
+    .input-row {
       display: flex; gap: .6rem;
-      background: var(--bg);
-      border: 1px solid var(--border2);
-      border-radius: var(--radius);
-      padding: .35rem .35rem .35rem 1rem;
+      background: var(--bg); border: 1px solid var(--border2);
+      border-radius: var(--r); padding: .35rem .35rem .35rem 1rem;
       transition: border-color .2s, box-shadow .2s;
     }
-    .input-wrap:focus-within {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-lo);
-    }
-    .input-wrap input {
+    .input-row:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--acclo); }
+    .input-row input {
       flex: 1; background: transparent; border: none; outline: none;
       color: var(--text); font-family: inherit; font-size: .9rem;
     }
-    .input-wrap input::placeholder { color: var(--text3); }
+    .input-row input::placeholder { color: var(--text3); }
     .btn-fetch {
-      background: linear-gradient(135deg, var(--accent), #9d8fff);
-      color: #fff; border: none; border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--accent), var(--acchi));
+      color: #fff; border: none; border-radius: var(--rsm);
       padding: .65rem 1.25rem; font-family: inherit;
       font-size: .85rem; font-weight: 600; cursor: pointer;
-      white-space: nowrap; transition: opacity .2s, transform .15s;
       display: flex; align-items: center; gap: .5rem;
+      transition: opacity .2s, transform .15s; white-space: nowrap;
     }
     .btn-fetch:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
     .btn-fetch:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
-    /* ─────────────── PANEL (shared) ─────────────── */
-    .panel {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      display: none;
-    }
-    .panel-header {
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: .6rem;
-    }
-    .panel-header-icon {
-      width: 26px; height: 26px; border-radius: 7px;
-      background: var(--accent-lo); border: 1px solid #7c6af733;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .panel-header-icon svg { width: 13px; height: 13px; stroke: var(--accent-hi); fill: none; }
-    .panel-title {
-      font-size: .78rem; font-weight: 600; letter-spacing: .06em;
-      text-transform: uppercase; color: var(--text2);
-    }
-    .panel-body { padding: 1.5rem; }
-
-    /* ─────────────── PREVIEW ─────────────── */
-    .preview-layout { display: flex; gap: 1.25rem; }
-    .thumb-box {
-      flex-shrink: 0; width: 148px; height: 94px;
-      border-radius: var(--radius-sm); overflow: hidden;
-      background: var(--surface2); position: relative;
-    }
-    .thumb-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* PREVIEW */
+    .prev-layout { display: flex; gap: 1.25rem; }
+    .thumb { flex-shrink: 0; width: 148px; height: 94px; border-radius: var(--rsm); overflow: hidden; background: var(--s2); position: relative; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .thumb-dur {
       position: absolute; bottom: 5px; right: 6px;
       background: rgba(0,0,0,.78); color: #fff;
-      font-size: .62rem; font-weight: 700;
-      padding: .15rem .42rem; border-radius: 4px; letter-spacing: .03em;
+      font-size: .62rem; font-weight: 700; padding: .15rem .42rem;
+      border-radius: 4px;
     }
-    .preview-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .6rem; }
-    .preview-info h2 {
+    .prev-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .6rem; }
+    .prev-info h2 {
       font-size: .97rem; font-weight: 600; line-height: 1.5;
-      color: var(--text);
-      display: -webkit-box; -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical; overflow: hidden;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-    .meta-row { display: flex; flex-wrap: wrap; gap: .4rem; }
-    .meta-chip {
-      font-size: .7rem; font-weight: 500;
-      padding: .22rem .6rem; border-radius: 6px;
-      background: var(--surface2); color: var(--text2);
-      border: 1px solid var(--border);
+    .chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .chip {
+      font-size: .7rem; font-weight: 500; padding: .22rem .6rem;
+      border-radius: 6px; background: var(--s2); color: var(--text2); border: 1px solid var(--border);
     }
-    .meta-chip.hi {
-      background: var(--accent-lo); color: var(--accent-hi);
-      border-color: #7c6af733;
-    }
+    .chip.hi { background: var(--acclo); color: var(--acchi); border-color: #7c6af733; }
 
-    /* ─────────────── QUALITY TABS ─────────────── */
+    /* TABS */
     .tabs {
-      display: flex; gap: 2px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 3px;
-      width: fit-content; margin-bottom: 1.25rem;
+      display: flex; gap: 2px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: var(--rsm);
+      padding: 3px; width: fit-content; margin-bottom: 1.25rem;
     }
     .tab {
       font-family: inherit; font-size: .78rem; font-weight: 500;
       color: var(--text3); background: transparent; border: none;
-      border-radius: 6px; padding: .38rem .9rem;
-      cursor: pointer; transition: all .15s;
+      border-radius: 6px; padding: .38rem .9rem; cursor: pointer; transition: all .15s;
     }
-    .tab.active { background: var(--surface2); color: var(--text); }
+    .tab.active { background: var(--s2); color: var(--text); }
 
-    /* ─────────────── PRESET GRID ─────────────── */
-    .preset-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: .55rem;
+    /* PRESET GRID */
+    .pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .55rem; }
+    .ptile {
+      background: var(--s2); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 1rem .9rem .85rem;
+      cursor: pointer; transition: border-color .15s, background .15s;
+      display: flex; flex-direction: column; gap: .35rem; position: relative;
     }
-    .preset-tile {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1rem .9rem .85rem;
-      cursor: pointer;
-      transition: border-color .15s, background .15s;
-      display: flex; flex-direction: column; gap: .35rem;
-      position: relative;
-    }
-    .preset-tile:hover:not(.dim) {
-      border-color: var(--border2);
-      background: var(--surface3);
-    }
-    .preset-tile.active {
-      border-color: var(--accent) !important;
-      background: var(--accent-lo);
-      box-shadow: 0 0 0 1px var(--accent-lo);
-    }
-    .preset-tile.dim { opacity: .35; cursor: default; }
-    .q-badge {
-      font-size: .62rem; font-weight: 700; letter-spacing: .06em;
-      padding: .18rem .48rem; border-radius: 5px; width: fit-content;
-    }
-    .preset-name { font-size: .82rem; font-weight: 600; color: var(--text); }
-    .preset-hint { font-size: .68rem; color: var(--text3); line-height: 1.4; }
+    .ptile:hover:not(.dim) { border-color: var(--border2); background: var(--s3); }
+    .ptile.active { border-color: var(--accent) !important; background: var(--acclo); box-shadow: 0 0 0 1px var(--acclo); }
+    .ptile.dim { opacity: .35; cursor: default; }
+    .pbadge { font-size: .62rem; font-weight: 700; letter-spacing: .06em; padding: .18rem .48rem; border-radius: 5px; width: fit-content; }
+    .pname { font-size: .82rem; font-weight: 600; }
+    .phint { font-size: .68rem; color: var(--text3); line-height: 1.4; }
 
-    /* ─────────────── ALL-FORMATS LIST ─────────────── */
-    .fmt-list {
-      display: flex; flex-direction: column; gap: .35rem;
-      max-height: 300px; overflow-y: auto; padding-right: 4px;
-    }
-    .fmt-list::-webkit-scrollbar { width: 3px; }
-    .fmt-list::-webkit-scrollbar-track { background: transparent; }
-    .fmt-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-    .fmt-row {
+    /* FORMAT LIST */
+    .flist { display: flex; flex-direction: column; gap: .35rem; max-height: 300px; overflow-y: auto; padding-right: 4px; }
+    .flist::-webkit-scrollbar { width: 3px; }
+    .flist::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+    .frow {
       display: flex; align-items: center; gap: .75rem;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: .6rem .9rem;
+      background: var(--s2); border: 1px solid var(--border);
+      border-radius: var(--rsm); padding: .6rem .9rem;
       cursor: pointer; transition: border-color .12s, background .12s;
     }
-    .fmt-row:hover { border-color: var(--border2); background: var(--surface3); }
-    .fmt-row.active { border-color: var(--accent); background: var(--accent-lo); }
-    .fmt-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    .fmt-dot.combined { background: var(--success); }
-    .fmt-dot.video    { background: var(--warn); }
-    .fmt-dot.audio    { background: #67e8f9; }
-    .fmt-label { flex: 1; font-size: .8rem; color: var(--text2); }
-    .fmt-size  { font-size: .72rem; color: var(--text3); white-space: nowrap; }
+    .frow:hover { border-color: var(--border2); background: var(--s3); }
+    .frow.active { border-color: var(--accent); background: var(--acclo); }
+    .fdot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .fdot.combined { background: var(--ok); }
+    .fdot.video    { background: var(--warn); }
+    .fdot.audio    { background: #67e8f9; }
+    .flabel { flex: 1; font-size: .8rem; color: var(--text2); }
+    .fsize  { font-size: .72rem; color: var(--text3); white-space: nowrap; }
 
-    /* ─────────────── DOWNLOAD BTN ─────────────── */
+    /* DL ROW */
     .dl-row {
-      margin-top: 1.25rem;
-      padding-top: 1.25rem;
+      margin-top: 1.25rem; padding-top: 1.25rem;
       border-top: 1px solid var(--border);
       display: flex; align-items: center; gap: 1rem;
     }
-    .btn-download {
-      background: linear-gradient(135deg, var(--accent), #9d8fff);
-      color: #fff; border: none; border-radius: var(--radius-sm);
+    .btn-dl {
+      background: linear-gradient(135deg, var(--accent), var(--acchi));
+      color: #fff; border: none; border-radius: var(--rsm);
       padding: .7rem 1.5rem; font-family: inherit;
       font-size: .88rem; font-weight: 600; cursor: pointer;
       display: flex; align-items: center; gap: .5rem;
       transition: opacity .2s, transform .15s;
     }
-    .btn-download:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
-    .btn-download:disabled { opacity: .35; cursor: not-allowed; transform: none; }
-    .sel-label { font-size: .78rem; color: var(--text3); }
+    .btn-dl:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+    .btn-dl:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+    .sel-lbl { font-size: .78rem; color: var(--text3); }
 
-    /* ─────────────── PROGRESS ─────────────── */
+    /* WHATSAPP */
+    .wa-box {
+      margin-top: 1rem; padding: 1rem 1.25rem;
+      background: #25D36608; border: 1px solid #25D36625; border-radius: var(--r);
+    }
+    .wa-title {
+      font-size: .72rem; font-weight: 600; letter-spacing: .07em;
+      text-transform: uppercase; color: var(--wa);
+      display: flex; align-items: center; gap: .4rem; margin-bottom: .65rem;
+    }
+    .wa-desc { font-size: .77rem; color: var(--text3); margin-bottom: .85rem; line-height: 1.55; }
+    .btn-wa {
+      background: var(--wa); color: #fff; border: none; border-radius: var(--rsm);
+      padding: .65rem 1.2rem; font-family: inherit;
+      font-size: .85rem; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: .5rem;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn-wa:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+    .btn-wa:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+    /* PROGRESS */
     .prog-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: .75rem; }
-    .prog-status { font-size: .88rem; font-weight: 600; color: var(--text); }
-    .prog-status.running { color: var(--accent-hi); }
-    .prog-status.done    { color: var(--success); }
-    .prog-status.error   { color: var(--error); }
-    .prog-status.merging { color: var(--warn); }
-    .prog-status.encoding { color: var(--warn); }
-    .prog-pct { font-size: 1rem; font-weight: 700; color: var(--accent-hi); }
+    .prog-label { font-size: .88rem; font-weight: 600; }
+    .prog-label.running  { color: var(--acchi); }
+    .prog-label.encoding { color: var(--warn); }
+    .prog-label.done     { color: var(--ok); }
+    .prog-label.error    { color: var(--err); }
+    .prog-pct { font-size: 1rem; font-weight: 700; color: var(--acchi); }
 
-    .bar-track {
-      width: 100%; height: 4px;
-      background: var(--surface2); border-radius: 99px; overflow: hidden;
-      margin-bottom: .9rem;
-    }
-    .bar-fill {
-      height: 100%; border-radius: 99px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-hi));
-      transition: width .35s ease;
-    }
+    .bar-track { width: 100%; height: 4px; background: var(--s2); border-radius: 99px; overflow: hidden; margin-bottom: .9rem; }
+    .bar-fill  { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--acchi)); transition: width .35s ease; }
     .bar-fill.encoding {
       background: linear-gradient(90deg, var(--warn), #fde68a, var(--warn));
       background-size: 200% 100%;
       animation: shimmer 1.4s linear infinite;
     }
-    @keyframes shimmer {
-      0%   { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-    .prog-stats {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem;
-    }
-    .stat-box {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: .6rem .75rem;
-    }
-    .stat-label { font-size: .65rem; font-weight: 600; letter-spacing: .08em;
-      text-transform: uppercase; color: var(--text3); margin-bottom: .2rem; }
-    .stat-val { font-size: .88rem; font-weight: 600; color: var(--text); }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
+    .stat { background: var(--s2); border: 1px solid var(--border); border-radius: var(--rsm); padding: .6rem .75rem; }
+    .stat-lbl { font-size: .65rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); margin-bottom: .2rem; }
+    .stat-val { font-size: .88rem; font-weight: 600; }
 
     .done-box {
       margin-top: 1rem; padding: 1rem 1.25rem;
       background: #34d39912; border: 1px solid #34d39933;
-      border-radius: var(--radius); display: none;
+      border-radius: var(--r); display: none;
     }
-    .done-box-inner { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .done-inner { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
     .btn-save {
-      background: var(--success); color: #fff;
-      border: none; border-radius: var(--radius-sm);
+      background: var(--ok); color: #fff; border: none; border-radius: var(--rsm);
       padding: .65rem 1.2rem; font-family: inherit;
       font-size: .85rem; font-weight: 600; cursor: pointer;
       display: flex; align-items: center; gap: .5rem;
       transition: opacity .2s, transform .15s;
     }
     .btn-save:hover { opacity: .9; transform: translateY(-1px); }
-
-    /* ── WhatsApp button ── */
-    .btn-whatsapp {
-      background: #25D366; color: #fff;
-      border: none; border-radius: var(--radius-sm);
-      padding: .65rem 1.2rem; font-family: inherit;
-      font-size: .85rem; font-weight: 600; cursor: pointer;
-      display: flex; align-items: center; gap: .5rem;
-      transition: opacity .2s, transform .15s;
-    }
-    .btn-whatsapp:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
-    .btn-whatsapp:disabled { opacity: .4; cursor: not-allowed; transform: none; }
-
-    .wa-section {
-      margin-top: 1rem; padding: 1rem 1.25rem;
-      background: #25D36608;
-      border: 1px solid #25D36625;
-      border-radius: var(--radius);
-    }
-    .wa-label {
-      font-size: .72rem; font-weight: 600;
-      letter-spacing: .07em; text-transform: uppercase;
-      color: #25D366; margin-bottom: .65rem;
-      display: flex; align-items: center; gap: .4rem;
-    }
-    .wa-desc {
-      font-size: .77rem; color: var(--text3);
-      margin-bottom: .85rem; line-height: 1.55;
-    }
     .done-meta { font-size: .78rem; color: var(--text2); line-height: 1.55; }
     .done-meta strong { color: var(--text); display: block; }
 
-    /* ─────────────── FOOTER ─────────────── */
-    footer {
-      margin-top: auto; padding: 2rem 1.5rem;
-      text-align: center; font-size: .72rem;
-      color: var(--text3); border-top: 1px solid var(--border);
-    }
-
-    /* ─────────────── TOAST ─────────────── */
+    /* MISC */
+    footer { margin-top: auto; padding: 2rem 1.5rem; text-align: center; font-size: .72rem; color: var(--text3); border-top: 1px solid var(--border); }
     #toast {
       position: fixed; bottom: 2rem; left: 50%;
-      transform: translateX(-50%) translateY(60px);
-      opacity: 0;
-      background: var(--surface3); border: 1px solid var(--border2);
+      transform: translateX(-50%) translateY(60px); opacity: 0;
+      background: var(--s3); border: 1px solid var(--border2);
       color: var(--text); padding: .7rem 1.2rem;
-      border-radius: var(--radius-sm); font-size: .83rem;
-      transition: transform .25s ease, opacity .25s ease;
+      border-radius: var(--rsm); font-size: .83rem;
+      transition: transform .25s, opacity .25s;
       z-index: 999; white-space: nowrap; pointer-events: none;
     }
     #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-    #toast.err  { border-color: var(--error); color: var(--error); }
-
-    /* ─────────────── SPINNER ─────────────── */
-    .spin {
-      width: 14px; height: 14px;
-      border: 2px solid #ffffff30; border-top-color: #fff;
-      border-radius: 50%; animation: rot .7s linear infinite; flex-shrink: 0;
-    }
+    #toast.err  { border-color: var(--err); color: var(--err); }
+    .spin { width: 14px; height: 14px; border: 2px solid #ffffff30; border-top-color: #fff; border-radius: 50%; animation: rot .7s linear infinite; flex-shrink: 0; }
     @keyframes rot { to { transform: rotate(360deg); } }
 
-    /* ─────────────── RESPONSIVE ─────────────── */
+    .hidden { display: none !important; }
+
     @media (max-width: 500px) {
       .hero h1 { font-size: 1.75rem; }
-      .preview-layout { flex-direction: column; }
-      .thumb-box { width: 100%; height: 180px; }
-      .preset-grid { grid-template-columns: repeat(2, 1fr); }
-      .prog-stats { grid-template-columns: 1fr 1fr; }
+      .prev-layout { flex-direction: column; }
+      .thumb { width: 100%; height: 180px; }
+      .pgrid { grid-template-columns: repeat(2, 1fr); }
+      .stats { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
-  <a class="nav-logo" href="#">
-    <div class="logo-icon">
-      <svg viewBox="0 0 16 16"><path d="M3 3l10 5-10 5V3z"/></svg>
-    </div>
+  <a class="logo" href="#">
+    <div class="logo-icon"><svg viewBox="0 0 16 16"><path d="M3 3l10 5-10 5V3z"/></svg></div>
     <span class="logo-text">Downloader</span>
   </a>
 </nav>
 
-<!-- HERO -->
 <div class="hero">
-  <div class="hero-eyebrow"><span></span>Fast &amp; High Quality</div>
+  <div class="eyebrow"><span></span>Fast &amp; High Quality</div>
   <h1>Download Any Video</h1>
-  <p>Paste a URL below and save videos in the quality you choose — up to 4K.</p>
+  <p>Paste a URL and save videos in the quality you choose — up to 4K.</p>
 </div>
 
-<!-- CONTAINER -->
-<div class="container">
+<div class="wrap">
 
-  <!-- URL Input -->
+  <!-- URL -->
   <div class="input-card">
-    <div class="input-wrap">
+    <div class="input-row">
       <input type="url" id="url-input" placeholder="Paste a video URL here…" autocomplete="off" />
       <button class="btn-fetch" id="fetch-btn" onclick="fetchInfo()">
-        <span id="fetch-label">Get Video</span>
+        <span id="fetch-lbl">Get Video</span>
       </button>
     </div>
   </div>
 
-  <!-- Video Info -->
-  <div class="panel" id="panel-preview">
-    <div class="panel-header">
-      <div class="panel-header-icon">
+  <!-- Preview -->
+  <div class="card hidden" id="card-preview">
+    <div class="card-head">
+      <div class="head-icon">
         <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3V9z"/>
         </svg>
       </div>
-      <span class="panel-title">Video Info</span>
+      <span class="head-title">Video Info</span>
     </div>
-    <div class="panel-body">
-      <div class="preview-layout">
-        <div class="thumb-box">
-          <img id="thumb" src="" alt="" />
-          <span class="thumb-dur" id="vid-dur"></span>
+    <div class="card-body">
+      <div class="prev-layout">
+        <div class="thumb">
+          <img id="p-thumb" src="" alt="" />
+          <span class="thumb-dur" id="p-dur"></span>
         </div>
-        <div class="preview-info">
-          <h2 id="vid-title"></h2>
-          <div class="meta-row">
-            <span class="meta-chip" id="chip-uploader"></span>
-            <span class="meta-chip" id="chip-views"></span>
-            <span class="meta-chip hi" id="chip-res"></span>
+        <div class="prev-info">
+          <h2 id="p-title"></h2>
+          <div class="chips">
+            <span class="chip" id="c-uploader"></span>
+            <span class="chip" id="c-views"></span>
+            <span class="chip hi" id="c-res"></span>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Quality Selection -->
-  <div class="panel" id="panel-quality">
-    <div class="panel-header">
-      <div class="panel-header-icon">
+  <!-- Quality -->
+  <div class="card hidden" id="card-quality">
+    <div class="card-head">
+      <div class="head-icon">
         <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
         </svg>
       </div>
-      <span class="panel-title">Select Quality</span>
+      <span class="head-title">Select Quality</span>
     </div>
-    <div class="panel-body">
+    <div class="card-body">
       <div class="tabs">
         <button class="tab active" onclick="switchTab('presets')">Presets</button>
         <button class="tab" onclick="switchTab('all')">All Formats</button>
       </div>
-
-      <div id="view-presets">
-        <div class="preset-grid" id="preset-grid"></div>
-      </div>
-
-      <div id="view-all" style="display:none">
-        <div class="fmt-list" id="fmt-list"></div>
-      </div>
+      <div id="view-presets"><div class="pgrid" id="pgrid"></div></div>
+      <div id="view-all" class="hidden"><div class="flist" id="flist"></div></div>
 
       <div class="dl-row">
-        <button class="btn-download" id="dl-btn" disabled onclick="startDownload()">
+        <button class="btn-dl" id="dl-btn" disabled onclick="startDownload()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
           Download
         </button>
-        <span class="sel-label" id="sel-label">No quality selected</span>
+        <span class="sel-lbl" id="sel-lbl">No quality selected</span>
       </div>
 
-      <!-- WhatsApp section -->
-      <div class="wa-section" id="wa-section" style="display:none">
-        <div class="wa-label">
+      <!-- WhatsApp -->
+      <div class="wa-box hidden" id="wa-box">
+        <div class="wa-title">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.978-1.301A9.96 9.96 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.952 7.952 0 01-4.065-1.116l-.29-.173-3.007.786.804-2.927-.19-.302A7.952 7.952 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
           Send via WhatsApp
         </div>
-        <div class="wa-desc">Downloads at 720p, H.264 + AAC — optimised so the video plays inline on WhatsApp instead of sending as a file attachment.</div>
-        <button class="btn-whatsapp" id="wa-btn" onclick="startDownload(true)">
+        <div class="wa-desc">Downloads at 720p max, H.264 + AAC — plays inline on WhatsApp instead of as a file attachment.</div>
+        <button class="btn-wa" onclick="startDownload(true)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.978-1.301A9.96 9.96 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.952 7.952 0 01-4.065-1.116l-.29-.173-3.007.786.804-2.927-.19-.302A7.952 7.952 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
           Download for WhatsApp
         </button>
@@ -533,39 +402,28 @@
   </div>
 
   <!-- Progress -->
-  <div class="panel" id="panel-progress">
-    <div class="panel-header">
-      <div class="panel-header-icon">
+  <div class="card hidden" id="card-progress">
+    <div class="card-head">
+      <div class="head-icon">
         <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
         </svg>
       </div>
-      <span class="panel-title">Progress</span>
+      <span class="head-title">Progress</span>
     </div>
-    <div class="panel-body">
+    <div class="card-body">
       <div class="prog-top">
-        <div class="prog-status running" id="prog-status">Starting…</div>
+        <div class="prog-label running" id="prog-lbl">Starting…</div>
         <div class="prog-pct" id="prog-pct">0%</div>
       </div>
-      <div class="bar-track">
-        <div class="bar-fill" id="bar-fill" style="width:0%"></div>
-      </div>
-      <div class="prog-stats">
-        <div class="stat-box">
-          <div class="stat-label">Speed</div>
-          <div class="stat-val" id="stat-speed">—</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">ETA</div>
-          <div class="stat-val" id="stat-eta">—</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">Size</div>
-          <div class="stat-val" id="stat-size">—</div>
-        </div>
+      <div class="bar-track"><div class="bar-fill" id="bar" style="width:0%"></div></div>
+      <div class="stats">
+        <div class="stat"><div class="stat-lbl">Speed</div><div class="stat-val" id="s-speed">—</div></div>
+        <div class="stat"><div class="stat-lbl">ETA</div><div class="stat-val" id="s-eta">—</div></div>
+        <div class="stat"><div class="stat-lbl">Size</div><div class="stat-val" id="s-size">—</div></div>
       </div>
       <div class="done-box" id="done-box">
-        <div class="done-box-inner">
+        <div class="done-inner">
           <button class="btn-save" onclick="saveFile()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
@@ -573,24 +431,19 @@
             </svg>
             Save File
           </button>
-          <div class="done-meta">
-            <strong id="done-filename"></strong>
-            <span id="done-size"></span>
-          </div>
+          <div class="done-meta"><strong id="done-title"></strong><span id="done-size"></span></div>
         </div>
       </div>
     </div>
   </div>
 
-</div><!-- /container -->
+</div>
 
 <footer>Use responsibly. Respect copyright and platform terms of service.</footer>
-
 <div id="toast"></div>
 
 <script>
-  // ── Config ─────────────────────────────────────────────
-  const TAG_STYLES = {
+  const TAG = {
     gold:   { bg:'#f59e0b22', fg:'#f59e0b' },
     purple: { bg:'#a855f722', fg:'#c084fc' },
     blue:   { bg:'#3b82f622', fg:'#60a5fa' },
@@ -600,130 +453,104 @@
     teal:   { bg:'#14b8a622', fg:'#2dd4bf' },
   };
 
-  // ── State ─────────────────────────────────────────────
-  let taskId      = null;
-  let pollTimer   = null;
-  let selected    = null;
-  let activeTab   = 'presets';
-  let allFormats  = [];
-  let presets     = [];
+  let taskId = null, pollTimer = null, selected = null;
+  let activeTab = 'presets', allFormats = [], presets = [];
 
-  // ── Fetch ─────────────────────────────────────────────
+  // ── Fetch info ──────────────────────────────────────────
   async function fetchInfo() {
     const url = document.getElementById('url-input').value.trim();
     if (!url) return toast('Paste a video URL first.', true);
-
-    setFetchBusy(true);
-    hide('panel-preview'); hide('panel-quality'); hide('panel-progress');
-    hide('wa-section');
+    setBusy(true);
+    hide('card-preview'); hide('card-quality'); hide('card-progress'); hide('wa-box');
     selected = null;
-
     try {
-      const r = await fetch('/api/info', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ url }),
-      });
+      const r = await fetch('/api/info', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({url}) });
       const d = await r.json();
       if (!r.ok) throw new Error(d.detail || 'Could not fetch video info.');
       renderPreview(d);
       renderQuality(d);
-    } catch(e) {
-      toast(e.message, true);
-    } finally {
-      setFetchBusy(false);
-    }
+    } catch(e) { toast(e.message, true); }
+    finally { setBusy(false); }
   }
 
-  // ── Preview ────────────────────────────────────────────
   function renderPreview(d) {
-    document.getElementById('thumb').src        = d.thumbnail || '';
-    document.getElementById('vid-title').textContent = d.title || 'Untitled';
-    document.getElementById('vid-dur').textContent  = d.duration || '';
-    setChip('chip-uploader', d.uploader, d.uploader);
-    setChip('chip-views', d.view_count, fmtNum(d.view_count) + ' views');
-    setChip('chip-res',   d.max_height, 'Up to ' + d.max_height + 'p');
-    show('panel-preview');
+    document.getElementById('p-thumb').src = d.thumbnail || '';
+    document.getElementById('p-title').textContent = d.title || 'Untitled';
+    document.getElementById('p-dur').textContent  = d.duration || '';
+    chip('c-uploader', d.uploader, d.uploader);
+    chip('c-views',    d.view_count, fmt(d.view_count) + ' views');
+    chip('c-res',      d.max_height, 'Up to ' + d.max_height + 'p');
+    show('card-preview');
   }
-  function setChip(id, condition, text) {
+  function chip(id, cond, text) {
     const el = document.getElementById(id);
-    el.textContent = condition ? text : '';
-    el.style.display = condition ? '' : 'none';
+    el.textContent = cond ? text : '';
+    el.style.display = cond ? '' : 'none';
   }
-  function fmtNum(n) {
+  function fmt(n) {
     if (!n) return '';
-    if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
-    if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
-    if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
-    return n.toString();
+    if (n >= 1e9) return (n/1e9).toFixed(1)+'B';
+    if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
+    if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
+    return ''+n;
   }
 
-  // ── Quality ────────────────────────────────────────────
   function renderQuality(d) {
-    presets    = d.presets   || [];
-    allFormats = d.formats   || [];
+    presets = d.presets || []; allFormats = d.formats || [];
     const maxH = d.max_height || 0;
-
-    // Presets
-    const grid = document.getElementById('preset-grid');
+    const grid = document.getElementById('pgrid');
     grid.innerHTML = '';
     presets.forEach(p => {
-      const s = TAG_STYLES[p.tag_color] || TAG_STYLES.blue;
-      const unavail = p.height && maxH && p.height > maxH;
+      const s = TAG[p.tag_color] || TAG.blue;
       const tile = document.createElement('div');
-      tile.className = 'preset-tile' + (unavail ? ' dim' : '');
-      tile.innerHTML = `
-        <span class="q-badge" style="background:${s.bg};color:${s.fg}">${p.tag}</span>
-        <div class="preset-name">${p.label}</div>
-        <div class="preset-hint">${p.desc}</div>`;
-      if (!unavail) tile.onclick = () => pickPreset(p, tile);
+      tile.className = 'ptile';
+      tile.innerHTML = `<span class="pbadge" style="background:${s.bg};color:${s.fg}">${p.tag}</span>
+        <div class="pname">${p.label}</div><div class="phint">${p.desc}</div>`;
+      tile.onclick = () => pickPreset(p, tile);
       grid.appendChild(tile);
     });
-
-    // All formats
-    const list = document.getElementById('fmt-list');
+    const list = document.getElementById('flist');
     list.innerHTML = '';
     allFormats.forEach(f => {
       const row = document.createElement('div');
-      row.className = 'fmt-row';
-      row.innerHTML = `
-        <span class="fmt-dot ${f.kind}"></span>
-        <span class="fmt-label">${f.label}</span>
-        ${f.size ? `<span class="fmt-size">${f.size}</span>` : ''}`;
+      row.className = 'frow';
+      row.innerHTML = `<span class="fdot ${f.kind}"></span>
+        <span class="flabel">${f.label}</span>
+        ${f.size ? `<span class="fsize">${f.size}</span>` : ''}`;
       row.onclick = () => pickFmt(f, row);
       list.appendChild(row);
     });
-
     activeTab = 'presets'; updateTabs();
-    show('panel-quality');
-    show('wa-section');
+    show('card-quality'); show('wa-box');
   }
+
   function pickPreset(p, el) {
-    document.querySelectorAll('.preset-tile').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.ptile').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
     selected = { format_id: p.format_id, label: p.label };
-    document.getElementById('sel-label').textContent = p.label;
+    document.getElementById('sel-lbl').textContent = p.label;
     document.getElementById('dl-btn').disabled = false;
   }
   function pickFmt(f, el) {
-    document.querySelectorAll('.fmt-row').forEach(r => r.classList.remove('active'));
+    document.querySelectorAll('.frow').forEach(r => r.classList.remove('active'));
     el.classList.add('active');
     selected = { format_id: f.format_id, label: f.label };
-    document.getElementById('sel-label').textContent = f.label;
+    document.getElementById('sel-lbl').textContent = f.label;
     document.getElementById('dl-btn').disabled = false;
   }
 
   function switchTab(tab) {
     activeTab = tab; updateTabs();
-    document.getElementById('view-presets').style.display = tab === 'presets' ? '' : 'none';
-    document.getElementById('view-all').style.display     = tab === 'all'     ? '' : 'none';
+    document.getElementById('view-presets').classList.toggle('hidden', tab !== 'presets');
+    document.getElementById('view-all').classList.toggle('hidden', tab !== 'all');
     selected = null;
-    document.getElementById('sel-label').textContent = 'No quality selected';
+    document.getElementById('sel-lbl').textContent = 'No quality selected';
     document.getElementById('dl-btn').disabled = true;
   }
   function updateTabs() {
-    const tabs = document.querySelectorAll('.tab');
-    tabs[0].classList.toggle('active', activeTab === 'presets');
-    tabs[1].classList.toggle('active', activeTab === 'all');
+    const t = document.querySelectorAll('.tab');
+    t[0].classList.toggle('active', activeTab === 'presets');
+    t[1].classList.toggle('active', activeTab === 'all');
   }
 
   // ── Download ────────────────────────────────────────────
@@ -731,27 +558,18 @@
     if (!whatsapp && !selected) return;
     const url = document.getElementById('url-input').value.trim();
     taskId = crypto.randomUUID();
-    resetProgress();
-    show('panel-progress');
-    document.getElementById('panel-progress').scrollIntoView({ behavior:'smooth', block:'nearest' });
-
+    resetProg();
+    show('card-progress');
+    document.getElementById('card-progress').scrollIntoView({ behavior:'smooth', block:'nearest' });
     try {
       const r = await fetch('/api/download/start', {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          url,
-          format_id: whatsapp ? null : selected.format_id,
-          task_id: taskId,
-          whatsapp,
-        }),
+        body: JSON.stringify({ url, format_id: whatsapp ? null : selected.format_id, task_id: taskId, whatsapp }),
       });
       const d = await r.json();
-      if (!r.ok) throw new Error(d.detail || 'Download failed to start.');
+      if (!r.ok) throw new Error(d.detail || 'Failed to start.');
       poll(d.task_id);
-    } catch(e) {
-      toast(e.message, true);
-      hide('panel-progress');
-    }
+    } catch(e) { toast(e.message, true); hide('card-progress'); }
   }
 
   function poll(id) {
@@ -760,82 +578,72 @@
       try {
         const r = await fetch(`/api/download/status/${id}`);
         const d = await r.json();
-        applyProgress(d);
+        applyProg(d);
         if (d.status === 'done' || d.status === 'error') clearInterval(pollTimer);
       } catch {}
     }, 700);
   }
 
-  function applyProgress(d) {
+  function applyProg(d) {
     const pct = d.progress || 0;
-    document.getElementById('bar-fill').style.width = pct + '%';
+    document.getElementById('bar').style.width = pct + '%';
     document.getElementById('prog-pct').textContent = pct + '%';
-    document.getElementById('stat-speed').textContent = d.speed    || '—';
-    document.getElementById('stat-eta').textContent   = d.eta      || '—';
-    document.getElementById('stat-size').textContent  = d.filesize || '—';
+    document.getElementById('s-speed').textContent = d.speed    || '—';
+    document.getElementById('s-eta').textContent   = d.eta      || '—';
+    document.getElementById('s-size').textContent  = d.filesize || '—';
 
-    const st = document.getElementById('prog-status');
-    const map = {
+    const lbl = document.getElementById('prog-lbl');
+    const bar = document.getElementById('bar');
+    const MAP = {
       done:        ['done',     'Complete'],
       error:       ['error',    'Error — ' + (d.error || 'unknown')],
-      processing:  ['merging',  'Merging streams…'],
-      encoding:    ['encoding', 'Re-encoding video… please wait'],
-      starting:    ['running',  'Starting…'],
+      encoding:    ['encoding', 'Encoding… please wait'],
       downloading: ['running',  'Downloading…'],
+      starting:    ['running',  'Starting…'],
     };
-    const [cls, txt] = map[d.status] || ['running', 'Working…'];
-    st.className = 'prog-status ' + cls;
-    st.textContent = txt;
-
-    // Pulse the bar amber during encoding, normal gradient otherwise
-    const bar = document.getElementById('bar-fill');
-    if (d.status === 'encoding') {
-      bar.classList.add('encoding');
-    } else {
-      bar.classList.remove('encoding');
-    }
+    const [cls, txt] = MAP[d.status] || ['running', 'Working…'];
+    lbl.className = 'prog-label ' + cls;
+    lbl.textContent = txt;
+    bar.classList.toggle('encoding', d.status === 'encoding');
 
     if (d.status === 'done') {
-      document.getElementById('done-filename').textContent = d.title   || '';
-      document.getElementById('done-size').textContent     = d.filesize ? d.filesize + ' saved' : '';
+      document.getElementById('done-title').textContent = d.title    || '';
+      document.getElementById('done-size').textContent  = d.filesize ? d.filesize + ' saved' : '';
       document.getElementById('done-box').style.display = 'block';
     }
   }
 
-  function saveFile() {
-    if (taskId) window.location.href = `/api/download/file/${taskId}`;
-  }
+  function saveFile() { if (taskId) window.location.href = `/api/download/file/${taskId}`; }
 
-  function resetProgress() {
-    const bar = document.getElementById('bar-fill');
-    bar.style.width = '0%';
-    bar.classList.remove('encoding');
+  function resetProg() {
+    const bar = document.getElementById('bar');
+    bar.style.width = '0%'; bar.classList.remove('encoding');
     document.getElementById('prog-pct').textContent = '0%';
-    document.getElementById('stat-speed').textContent = '—';
-    document.getElementById('stat-eta').textContent   = '—';
-    document.getElementById('stat-size').textContent  = '—';
+    document.getElementById('s-speed').textContent = '—';
+    document.getElementById('s-eta').textContent   = '—';
+    document.getElementById('s-size').textContent  = '—';
     document.getElementById('done-box').style.display = 'none';
-    const st = document.getElementById('prog-status');
-    st.className = 'prog-status running'; st.textContent = 'Starting…';
+    const lbl = document.getElementById('prog-lbl');
+    lbl.className = 'prog-label running'; lbl.textContent = 'Starting…';
   }
 
-  // ── Helpers ────────────────────────────────────────────
-  function show(id) { document.getElementById(id).style.display = 'block'; }
-  function hide(id) { document.getElementById(id).style.display = 'none'; }
+  // ── Helpers ─────────────────────────────────────────────
+  function show(id) { document.getElementById(id).classList.remove('hidden'); }
+  function hide(id) { document.getElementById(id).classList.add('hidden'); }
 
-  function setFetchBusy(busy) {
+  function setBusy(b) {
     const btn = document.getElementById('fetch-btn');
-    const lbl = document.getElementById('fetch-label');
-    btn.disabled = busy;
-    lbl.innerHTML = busy
+    const lbl = document.getElementById('fetch-lbl');
+    btn.disabled = b;
+    lbl.innerHTML = b
       ? `<span style="display:flex;align-items:center;gap:.45rem"><span class="spin"></span>Fetching…</span>`
       : 'Get Video';
   }
 
-  function toast(msg, isErr = false) {
+  function toast(msg, err = false) {
     const el = document.getElementById('toast');
     el.textContent = msg;
-    el.className = 'show' + (isErr ? ' err' : '');
+    el.className = 'show' + (err ? ' err' : '');
     setTimeout(() => el.className = '', 3500);
   }
 

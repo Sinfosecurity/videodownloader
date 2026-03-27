@@ -2,12 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import os
-import re
 import uuid
 from pathlib import Path
 from typing import Dict, Optional
-
-BASE_DIR = Path(__file__).parent
 
 import yt_dlp
 from fastapi import FastAPI, HTTPException
@@ -15,396 +12,288 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-# Cookies setup — supports:
-# 1. INSTAGRAM_SESSION_ID  — Instagram sessionid cookie value (single string)
-# 2. YOUTUBE_SESSION_ID    — YouTube __Secure-3PSID cookie value (single string)
-# 3. COOKIES_CONTENT       — Full Netscape cookies file (covers any site)
-# Methods 1+2 can be combined; method 3 overrides both if set.
+BASE_DIR     = Path(__file__).parent
+DOWNLOAD_DIR = Path("/tmp/vdl_downloads")
 COOKIES_FILE = Path("/tmp/vdl_cookies.txt")
+DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
+app = FastAPI()
+
+tasks: Dict[str, dict] = {}
+
+
+# ── Optional cookies (set env vars on Railway to enable) ──────────────────────
 def _init_cookies() -> bool:
+    # COOKIES_CONTENT  — full Netscape cookies.txt content
+    # INSTAGRAM_SESSION_ID — Instagram sessionid value
+    # YOUTUBE_SESSION_ID   — YouTube __Secure-3PSID value
     lines = ["# Netscape HTTP Cookie File\n"]
     found = False
 
-    # Method 3: full cookies file — takes priority over individual session IDs
-    content = os.environ.get("COOKIES_CONTENT", "").strip()
-    if content:
-        COOKIES_FILE.write_text(content)
+    full = os.environ.get("COOKIES_CONTENT", "").strip()
+    if full:
+        COOKIES_FILE.write_text(full)
         return True
 
-    # Method 1: Instagram session ID
-    ig_session = os.environ.get("INSTAGRAM_SESSION_ID", "").strip()
-    if ig_session:
-        lines.append(
-            ".instagram.com\tTRUE\t/\tTRUE\t2147483647\tsessionid\t" + ig_session + "\n"
-        )
+    ig = os.environ.get("INSTAGRAM_SESSION_ID", "").strip()
+    if ig:
+        lines.append(f".instagram.com\tTRUE\t/\tTRUE\t2147483647\tsessionid\t{ig}\n")
         found = True
 
-    # Method 2: YouTube session ID (__Secure-3PSID is the primary YouTube auth cookie)
-    yt_session = os.environ.get("YOUTUBE_SESSION_ID", "").strip()
-    if yt_session:
-        lines.append(
-            ".youtube.com\tTRUE\t/\tTRUE\t2147483647\t__Secure-3PSID\t" + yt_session + "\n"
-        )
+    yt = os.environ.get("YOUTUBE_SESSION_ID", "").strip()
+    if yt:
+        lines.append(f".youtube.com\tTRUE\t/\tTRUE\t2147483647\t__Secure-3PSID\t{yt}\n")
         found = True
 
     if found:
         COOKIES_FILE.write_text("".join(lines))
-
     return found
 
+
 HAS_COOKIES = _init_cookies()
-
-app = FastAPI(title="Video Downloader")
-
-# Use /tmp on Railway (ephemeral but writable)
-DOWNLOAD_DIR = Path("/tmp/vdl_downloads")
-DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
-
-# In-memory store for task progress
-tasks: Dict[str, dict] = {}
+PROXY_URL   = os.environ.get("PROXY_URL", "").strip() or None
 
 
+# ── Models ─────────────────────────────────────────────────────────────────────
 class URLRequest(BaseModel):
     url: str
-
 
 class DownloadRequest(BaseModel):
     url: str
     format_id: Optional[str] = None
-    task_id: Optional[str] = None
-    whatsapp: Optional[bool] = False
+    task_id:   Optional[str] = None
+    whatsapp:  Optional[bool] = False
 
 
-def get_info_opts():
-    opts = {
-        "quiet": True,
-        "no_warnings": True,
-        "extract_flat": False,
-        "skip_download": True,
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["android_vr", "tv_simply"],
-            }
-        },
-    }
-    if HAS_COOKIES:
-        opts["cookiefile"] = str(COOKIES_FILE)
-    return opts
-
-
-# Quality presets — ordered best to worst, all output as MP4
+# ── Quality presets ────────────────────────────────────────────────────────────
 PRESETS = [
     {
-        "format_id": "bestvideo[ext=mp4][height<=2160]+bestaudio[ext=m4a]/bestvideo[height<=2160]+bestaudio/bestvideo+bestaudio/best",
-        "label": "4K / Best Available",
-        "desc": "Highest possible resolution",
-        "tag": "4K",
-        "tag_color": "gold",
+        "format_id":  "bestvideo[ext=mp4][height<=2160]+bestaudio[ext=m4a]/bestvideo[height<=2160]+bestaudio/bestvideo+bestaudio/best",
+        "label": "4K / Best",     "desc": "Highest possible resolution",
+        "tag":   "4K",            "tag_color": "gold",
     },
     {
-        "format_id": "bestvideo[ext=mp4][height<=1440]+bestaudio[ext=m4a]/bestvideo[height<=1440]+bestaudio/bestvideo+bestaudio/best",
-        "label": "1440p (2K)",
-        "desc": "Ultra-sharp, great for large screens",
-        "tag": "2K",
-        "tag_color": "purple",
+        "format_id":  "bestvideo[ext=mp4][height<=1440]+bestaudio[ext=m4a]/bestvideo[height<=1440]+bestaudio/best",
+        "label": "1440p (2K)",    "desc": "Ultra-sharp, great for large screens",
+        "tag":   "2K",            "tag_color": "purple",
     },
     {
-        "format_id": "bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
-        "label": "1080p Full HD",
-        "desc": "Best all-round quality",
-        "tag": "FHD",
-        "tag_color": "blue",
+        "format_id":  "bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
+        "label": "1080p Full HD", "desc": "Best all-round quality",
+        "tag":   "FHD",           "tag_color": "blue",
     },
     {
-        "format_id": "bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
-        "label": "720p HD",
-        "desc": "Good quality, smaller file",
-        "tag": "HD",
-        "tag_color": "green",
+        "format_id":  "bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
+        "label": "720p HD",       "desc": "Good quality, smaller file",
+        "tag":   "HD",            "tag_color": "green",
     },
     {
-        "format_id": "bestvideo[ext=mp4][height<=480]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best[height<=480]/best",
-        "label": "480p SD",
-        "desc": "Compact size, decent quality",
-        "tag": "SD",
-        "tag_color": "orange",
+        "format_id":  "bestvideo[ext=mp4][height<=480]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best[height<=480]/best",
+        "label": "480p SD",       "desc": "Compact size, decent quality",
+        "tag":   "SD",            "tag_color": "orange",
     },
     {
-        "format_id": "bestvideo[ext=mp4][height<=360]+bestaudio[ext=m4a]/bestvideo[height<=360]+bestaudio/best[height<=360]/best",
-        "label": "360p Low",
-        "desc": "Smallest video file",
-        "tag": "LOW",
-        "tag_color": "gray",
+        "format_id":  "bestvideo[ext=mp4][height<=360]+bestaudio[ext=m4a]/bestvideo[height<=360]+bestaudio/best[height<=360]/best",
+        "label": "360p Low",      "desc": "Smallest video file",
+        "tag":   "LOW",           "tag_color": "gray",
     },
     {
-        "format_id": "bestaudio[ext=m4a]/bestaudio/best",
-        "label": "Audio Only (M4A)",
-        "desc": "Best audio quality, no video",
-        "tag": "AAC",
-        "tag_color": "teal",
+        "format_id":  "bestaudio[ext=m4a]/bestaudio/best",
+        "label": "Audio Only (M4A)", "desc": "Best audio, no video",
+        "tag":   "AAC",           "tag_color": "teal",
     },
     {
-        "format_id": "bestaudio/best --extract-audio --audio-format mp3",
-        "label": "Audio Only (MP3)",
-        "desc": "Universal MP3 audio, 320kbps",
-        "tag": "MP3",
-        "tag_color": "teal",
+        "format_id":  "bestaudio/best",
+        "label": "Audio Only (MP3)", "desc": "Universal MP3, 320kbps",
+        "tag":   "MP3",           "tag_color": "teal",
         "audio_only": True,
-        "audio_format": "mp3",
     },
 ]
 
 
+def _common_opts() -> dict:
+    opts: dict = {
+        "quiet":          True,
+        "no_warnings":    True,
+        "extractor_args": {"youtube": {"player_client": ["android_vr", "tv_simply"]}},
+    }
+    if HAS_COOKIES:
+        opts["cookiefile"] = str(COOKIES_FILE)
+    if PROXY_URL:
+        opts["proxy"] = PROXY_URL
+    return opts
+
+
+# ── Routes ─────────────────────────────────────────────────────────────────────
 @app.get("/")
 async def index():
     return FileResponse(str(BASE_DIR / "static" / "index.html"))
 
 
-@app.get("/api/version")
-async def version():
-    import yt_dlp
-    return {"yt_dlp": yt_dlp.version.__version__}
-
-
 @app.post("/api/info")
-async def get_video_info(req: URLRequest):
+async def get_info(req: URLRequest):
+    opts = {**_common_opts(), "skip_download": True}
     try:
-        with yt_dlp.YoutubeDL(get_info_opts()) as ydl:
-            info = ydl.extract_info(req.url, download=False)
-            info = ydl.sanitize_info(info)
-
-        # Build available-format list for "All Formats" tab
-        formats = []
-        seen = set()
-        for f in info.get("formats", []):
-            fid = f.get("format_id", "")
-            height = f.get("height")
-            width = f.get("width")
-            ext = f.get("ext", "")
-            vcodec = f.get("vcodec", "none")
-            acodec = f.get("acodec", "none")
-            fps = f.get("fps")
-            tbr = f.get("tbr")
-            note = f.get("format_note", "")
-            filesize = f.get("filesize") or f.get("filesize_approx")
-
-            if vcodec == "none" and acodec == "none":
-                continue
-
-            has_video = vcodec != "none"
-            has_audio = acodec != "none"
-
-            if has_video and has_audio:
-                res = f"{height}p" if height else ext
-                fps_str = f" {int(fps)}fps" if fps and fps > 30 else ""
-                label = f"{res}{fps_str} · {ext} · video+audio"
-                kind = "combined"
-            elif has_video:
-                res = f"{height}p" if height else ext
-                fps_str = f" {int(fps)}fps" if fps and fps > 30 else ""
-                bitrate = f" · {int(tbr)}kbps" if tbr else ""
-                label = f"{res}{fps_str}{bitrate} · {ext} · video"
-                kind = "video"
-            else:
-                bitrate = f" · {int(tbr)}kbps" if tbr else ""
-                label = f"{ext} audio{bitrate}" + (f" · {note}" if note else "")
-                kind = "audio"
-
-            key = (height, ext, kind, fps)
-            if key in seen:
-                continue
-            seen.add(key)
-
-            size_str = ""
-            if filesize:
-                mb = filesize / (1024 * 1024)
-                size_str = f"{mb:.1f} MB"
-
-            formats.append({
-                "format_id": fid,
-                "label": label,
-                "kind": kind,
-                "height": height,
-                "fps": fps,
-                "ext": ext,
-                "size": size_str,
-                "tbr": tbr,
-            })
-
-        # Sort: combined first, then by resolution desc, then fps desc
-        formats.sort(key=lambda x: (
-            {"combined": 0, "video": 1, "audio": 2}.get(x["kind"], 3),
-            -(x["height"] or 0),
-            -(x["fps"] or 0),
-            -(x["tbr"] or 0),
-        ))
-
-        # Detect max available resolution to highlight supported presets
-        max_height = max((f.get("height") or 0 for f in info.get("formats", [])), default=0)
-
-        return {
-            "title": info.get("title", "Unknown"),
-            "thumbnail": info.get("thumbnail", ""),
-            "duration": info.get("duration_string", ""),
-            "uploader": info.get("uploader", ""),
-            "view_count": info.get("view_count"),
-            "like_count": info.get("like_count"),
-            "max_height": max_height,
-            "presets": PRESETS,
-            "formats": formats[:60],
-        }
+        loop = asyncio.get_event_loop()
+        data = await loop.run_in_executor(None, _fetch_info, req.url, opts)
+        return data
     except yt_dlp.utils.DownloadError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch video info: {str(e)}")
+        raise HTTPException(500, detail=str(e))
+
+
+def _fetch_info(url: str, opts: dict) -> dict:
+    with yt_dlp.YoutubeDL(opts) as ydl:
+        info = ydl.sanitize_info(ydl.extract_info(url, download=False))
+
+    formats, seen = [], set()
+    for f in info.get("formats", []):
+        vc = f.get("vcodec", "none")
+        ac = f.get("acodec", "none")
+        if vc == "none" and ac == "none":
+            continue
+        h   = f.get("height")
+        ext = f.get("ext", "")
+        fps = f.get("fps")
+        tbr = f.get("tbr")
+        sz  = f.get("filesize") or f.get("filesize_approx")
+
+        has_v, has_a = vc != "none", ac != "none"
+        if has_v and has_a:
+            fps_s = f" {int(fps)}fps" if fps and fps > 30 else ""
+            label, kind = f"{h}p{fps_s} · {ext} · video+audio", "combined"
+        elif has_v:
+            fps_s = f" {int(fps)}fps" if fps and fps > 30 else ""
+            label, kind = f"{h}p{fps_s} · {ext} · video", "video"
+        else:
+            btr_s = f" · {int(tbr)}kbps" if tbr else ""
+            label, kind = f"{ext} audio{btr_s}", "audio"
+
+        key = (h, ext, kind, fps)
+        if key in seen:
+            continue
+        seen.add(key)
+        formats.append({
+            "format_id": f.get("format_id", ""), "label": label, "kind": kind,
+            "height": h, "fps": fps, "ext": ext, "tbr": tbr,
+            "size": f"{sz/(1024*1024):.1f} MB" if sz else "",
+        })
+
+    formats.sort(key=lambda x: (
+        {"combined": 0, "video": 1, "audio": 2}.get(x["kind"], 3),
+        -(x["height"] or 0), -(x["fps"] or 0), -(x["tbr"] or 0),
+    ))
+    max_h = max((f.get("height") or 0 for f in info.get("formats", [])), default=0)
+
+    return {
+        "title":      info.get("title", ""),
+        "thumbnail":  info.get("thumbnail", ""),
+        "duration":   info.get("duration_string", ""),
+        "uploader":   info.get("uploader", ""),
+        "view_count": info.get("view_count"),
+        "max_height": max_h,
+        "presets":    PRESETS,
+        "formats":    formats[:60],
+    }
 
 
 @app.post("/api/download/start")
 async def start_download(req: DownloadRequest):
     task_id = req.task_id or str(uuid.uuid4())
     tasks[task_id] = {
-        "status": "starting",
-        "progress": 0,
-        "filename": None,
-        "error": None,
-        "title": "",
-        "speed": "",
-        "eta": "",
-        "filesize": "",
-        "whatsapp": req.whatsapp,
+        "status": "starting", "progress": 0,
+        "filename": None, "error": None,
+        "title": "", "speed": "", "eta": "", "filesize": "",
     }
-    asyncio.create_task(_run_download(
-        task_id, req.url,
-        req.format_id or PRESETS[2]["format_id"],
-        req.whatsapp or False,
-    ))
+    fmt = req.format_id or PRESETS[2]["format_id"]
+    asyncio.create_task(_run(task_id, req.url, fmt, bool(req.whatsapp)))
     return {"task_id": task_id}
 
 
-async def _run_download(task_id: str, url: str, format_id: str, whatsapp: bool = False):
+async def _run(task_id: str, url: str, fmt: str, whatsapp: bool):
     loop = asyncio.get_event_loop()
-    await loop.run_in_executor(None, _download_sync, task_id, url, format_id, whatsapp)
+    await loop.run_in_executor(None, _download, task_id, url, fmt, whatsapp)
 
 
-def _download_sync(task_id: str, url: str, format_id: str, whatsapp: bool = False):
-    output_path = DOWNLOAD_DIR / task_id
-    output_path.mkdir(exist_ok=True)
-    output_template = str(output_path / "%(title).120s.%(ext)s")
+def _download(task_id: str, url: str, fmt: str, whatsapp: bool):
+    work_dir = DOWNLOAD_DIR / task_id
+    work_dir.mkdir(exist_ok=True)
 
-    # Check if this is an MP3 preset (special handling)
-    is_mp3 = "mp3" in format_id
+    # MP3 preset uses audio-only format
+    is_mp3 = PRESETS[-1]["format_id"] == fmt and PRESETS[-1].get("audio_only")
 
-    # WhatsApp: cap at 720p, smaller CRF for file size
     if whatsapp:
-        clean_format = "bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]/best"
+        dl_fmt = "bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]/best"
+    elif is_mp3:
+        dl_fmt = "bestaudio/best"
     else:
-        clean_format = "bestaudio/best" if is_mp3 else format_id
+        dl_fmt = fmt
 
-    def progress_hook(d):
+    def on_progress(d):
         if d["status"] == "downloading":
-            total = d.get("total_bytes") or d.get("total_bytes_estimate", 0)
-            downloaded = d.get("downloaded_bytes", 0)
-            # Scale download to 0-80% — leave 80-100% for encoding
-            raw_pct = (downloaded / total * 100) if total else 0
-            percent = round(raw_pct * 0.8, 1)
-            speed = d.get("_speed_str", "").strip()
-            eta = d.get("_eta_str", "").strip()
-            size = ""
-            if total:
-                mb = total / (1024 * 1024)
-                size = f"{mb:.1f} MB"
+            total = d.get("total_bytes") or d.get("total_bytes_estimate") or 0
+            done  = d.get("downloaded_bytes", 0)
+            pct   = round(done / total * 80, 1) if total else 0
             tasks[task_id].update({
-                "status": "downloading",
-                "progress": percent,
-                "speed": speed,
-                "eta": eta,
-                "filesize": size,
+                "status":   "downloading",
+                "progress": pct,
+                "speed":    d.get("_speed_str", "").strip(),
+                "eta":      d.get("_eta_str",   "").strip(),
+                "filesize": f"{total/1048576:.1f} MB" if total else "",
             })
         elif d["status"] == "finished":
-            tasks[task_id].update({
-                "status": "encoding",
-                "progress": 80,
-                "speed": "",
-                "eta": "",
-            })
+            tasks[task_id].update({"status": "encoding", "progress": 80, "speed": "", "eta": ""})
         elif d["status"] == "error":
-            tasks[task_id].update({"status": "error", "error": "Download failed during transfer"})
+            tasks[task_id].update({"status": "error", "error": "Download failed"})
 
-    def postprocessor_hook(d):
-        """Track ffmpeg encoding progress (fires at start and finish of each PP step)."""
-        if d["status"] == "started":
-            tasks[task_id].update({"status": "encoding", "progress": 85})
-        elif d["status"] == "finished":
-            tasks[task_id].update({"status": "encoding", "progress": 98})
+    def on_postprocess(d):
+        if   d["status"] == "started":  tasks[task_id].update({"status": "encoding", "progress": 85})
+        elif d["status"] == "finished": tasks[task_id].update({"status": "encoding", "progress": 98})
 
-    ydl_opts = {
-        "format": clean_format,
-        "outtmpl": output_template,
-        "progress_hooks": [progress_hook],
-        "postprocessor_hooks": [postprocessor_hook],
-        "quiet": True,
-        "no_warnings": True,
-        "merge_output_format": "mp4",
-        # android_vr + tv avoids YouTube SABR streaming restrictions entirely
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["android_vr", "tv_simply"],
-            }
-        },
-        # Re-encode to H.264 + AAC so the file plays natively everywhere
-        # (WhatsApp, iMessage, Telegram, etc.) without showing as attachment
-        "postprocessors": [
-            {
-                "key": "FFmpegVideoConvertor",
-                "preferedformat": "mp4",
-            }
-        ],
-        "postprocessor_args": {
+    opts = {
+        **_common_opts(),
+        "format":               dl_fmt,
+        "outtmpl":              str(work_dir / "%(title).120s.%(ext)s"),
+        "progress_hooks":       [on_progress],
+        "postprocessor_hooks":  [on_postprocess],
+        "merge_output_format":  "mp4",
+        "postprocessors":       [{"key": "FFmpegVideoConvertor", "preferedformat": "mp4"}],
+        "postprocessor_args":   {
             "ffmpeg": [
                 "-vcodec", "libx264",
                 "-acodec", "aac",
-                "-crf", "28" if whatsapp else "23",   # smaller file for WhatsApp
+                "-crf",    "28" if whatsapp else "23",
                 "-preset", "fast",
-                "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",  # ensure even dimensions
+                "-vf",     "scale=trunc(iw/2)*2:trunc(ih/2)*2",
                 "-movflags", "+faststart",
-            ] + (["-b:a", "128k"] if whatsapp else [])  # lower audio bitrate for WA
+            ] + (["-b:a", "128k"] if whatsapp else [])
         },
         "prefer_ffmpeg": True,
-        "keepvideo": False,
+        "keepvideo":     False,
     }
-    if HAS_COOKIES:
-        ydl_opts["cookiefile"] = str(COOKIES_FILE)
 
     if is_mp3:
-        ydl_opts["postprocessors"] = [{
-            "key": "FFmpegExtractAudio",
-            "preferredcodec": "mp3",
-            "preferredquality": "320",  # 320kbps MP3
-        }]
-        ydl_opts.pop("merge_output_format", None)
-        ydl_opts.pop("remux_video", None)
-        # Use simpler output template for audio
-        ydl_opts["outtmpl"] = str(output_path / "%(title).120s.%(ext)s")
+        opts["postprocessors"] = [{"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": "320"}]
+        opts.pop("merge_output_format", None)
+        del opts["postprocessor_args"]
 
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(opts) as ydl:
             info = ydl.extract_info(url, download=True)
-            title = info.get("title", "video")
-            tasks[task_id]["title"] = title
+            tasks[task_id]["title"] = info.get("title", "")
 
-        files = [f for f in output_path.glob("*") if f.suffix not in (".part", ".ytdl")]
+        files = [f for f in work_dir.glob("*") if f.suffix not in (".part", ".ytdl")]
         if files:
-            # Pick the largest file (the final merged output)
             best = max(files, key=lambda f: f.stat().st_size)
             tasks[task_id].update({
-                "status": "done",
+                "status":   "done",
                 "progress": 100,
                 "filename": best.name,
-                "filesize": f"{best.stat().st_size / (1024*1024):.1f} MB",
+                "filesize": f"{best.stat().st_size/1048576:.1f} MB",
             })
         else:
-            tasks[task_id].update({"status": "error", "error": "File not found after download"})
+            tasks[task_id].update({"status": "error", "error": "No file produced"})
     except Exception as e:
         tasks[task_id].update({"status": "error", "error": str(e)})
 
@@ -412,28 +301,19 @@ def _download_sync(task_id: str, url: str, format_id: str, whatsapp: bool = Fals
 @app.get("/api/download/status/{task_id}")
 async def get_status(task_id: str):
     if task_id not in tasks:
-        raise HTTPException(status_code=404, detail="Task not found")
+        raise HTTPException(404, "Task not found")
     return tasks[task_id]
 
 
 @app.get("/api/download/file/{task_id}")
-async def serve_file(task_id: str):
-    if task_id not in tasks:
-        raise HTTPException(status_code=404, detail="Task not found")
-
-    task = tasks[task_id]
-    if task["status"] != "done" or not task.get("filename"):
-        raise HTTPException(status_code=400, detail="File not ready")
-
-    file_path = DOWNLOAD_DIR / task_id / task["filename"]
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="File not found on disk")
-
-    return FileResponse(
-        path=str(file_path),
-        filename=task["filename"],
-        media_type="application/octet-stream",
-    )
+async def get_file(task_id: str):
+    task = tasks.get(task_id)
+    if not task or task["status"] != "done":
+        raise HTTPException(400, "File not ready")
+    path = DOWNLOAD_DIR / task_id / task["filename"]
+    if not path.exists():
+        raise HTTPException(404, "File not found")
+    return FileResponse(str(path), filename=task["filename"], media_type="application/octet-stream")
 
 
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")

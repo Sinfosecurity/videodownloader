@@ -7,8 +7,6 @@ RUN apt-get update && \
 WORKDIR /app
 
 COPY requirements.txt .
-
-# cache-bust: 2025.10.14
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
