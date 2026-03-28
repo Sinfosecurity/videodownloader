@@ -472,9 +472,18 @@
   let activeTab = 'presets', allFormats = [], presets = [];
 
   // ── Fetch info ──────────────────────────────────────────
+  function extractUrl(text) {
+    // If text contains a URL anywhere inside it (e.g. Instagram share text), extract it
+    const match = text.match(/https?:\/\/[^\s'"]+/);
+    return match ? match[0] : text.trim();
+  }
+
   async function fetchInfo() {
-    const url = document.getElementById('url-input').value.trim();
-    if (!url) return toast('Paste a video URL first.', true);
+    const raw = document.getElementById('url-input').value.trim();
+    if (!raw) return toast('Paste a video URL first.', true);
+    const url = extractUrl(raw);
+    // Update input box to show the clean URL
+    document.getElementById('url-input').value = url;
     setBusy(true);
     hide('card-preview'); hide('card-quality'); hide('card-progress'); hide('wa-box');
     selected = null;
@@ -571,7 +580,7 @@
   // ── Download ────────────────────────────────────────────
   async function startDownload(whatsapp = false) {
     if (!whatsapp && !selected) return;
-    const url = document.getElementById('url-input').value.trim();
+    const url = extractUrl(document.getElementById('url-input').value.trim());
     taskId = crypto.randomUUID();
     resetProg();
     show('card-progress');
