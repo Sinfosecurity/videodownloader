@@ -272,6 +272,15 @@
       transition: opacity .2s, transform .15s;
     }
     .btn-save:hover { opacity: .9; transform: translateY(-1px); }
+    .btn-new {
+      background: transparent; color: var(--text2);
+      border: 1px solid var(--border2); border-radius: var(--rsm);
+      padding: .65rem 1.2rem; font-family: inherit;
+      font-size: .85rem; font-weight: 500; cursor: pointer;
+      display: flex; align-items: center; gap: .5rem;
+      transition: all .2s;
+    }
+    .btn-new:hover { color: var(--text); border-color: var(--accent); background: var(--acclo); }
     .done-meta { font-size: .78rem; color: var(--text2); line-height: 1.55; }
     .done-meta strong { color: var(--text); display: block; }
 
@@ -430,6 +439,12 @@
               <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
             Save File
+          </button>
+          <button class="btn-new" onclick="resetAll()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.77"/>
+            </svg>
+            Download Another
           </button>
           <div class="done-meta"><strong id="done-title"></strong><span id="done-size"></span></div>
         </div>
@@ -614,6 +629,18 @@
   }
 
   function saveFile() { if (taskId) window.location.href = `/api/download/file/${taskId}`; }
+
+  function resetAll() {
+    taskId = null; selected = null;
+    clearInterval(pollTimer);
+    document.getElementById('url-input').value = '';
+    document.getElementById('dl-btn').disabled = true;
+    document.getElementById('sel-lbl').textContent = 'No quality selected';
+    hide('card-preview'); hide('card-quality'); hide('card-progress'); hide('wa-box');
+    resetProg();
+    document.getElementById('url-input').focus();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   function resetProg() {
     const bar = document.getElementById('bar');
